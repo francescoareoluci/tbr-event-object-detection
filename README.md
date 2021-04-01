@@ -18,6 +18,10 @@ This repository use the following repos as submodules:
 Once this repository have been cloned, run:
 > git submodule update --init
 
+## Requirements
+
+In order to execute the conversion and the object detection, use the environment.yml file to create a dedicated Conda environment.
+
 ## Convert events to frames
 
 Events from the Prophesee’s GEN1 dataset can be converted to frames and bounding box labeling using the code inside the src/ folder. The code performs the conversion of all the events listed in a given directory and organizes the data in a folder compliant to what the YOLOv3 implementation expect. Given a destination directory, the following directory tree is generated:
