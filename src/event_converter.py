@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from PIL import Image
 from tqdm import tqdm
-from TBE import TemporalBinaryEncoding
+from tbe import TemporalBinaryEncoding
 
 import sys
 sys.path.insert(0, '../prophesee-automotive-dataset-toolbox/')
