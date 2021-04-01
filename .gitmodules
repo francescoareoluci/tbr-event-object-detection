@@ -1,0 +1,6 @@
+[submodule "PyTorch-YOLOv3"]
+	path = PyTorch-YOLOv3
+	url = https://github.com/eriklindernoren/PyTorch-YOLOv3.git
+[submodule "prophesee-automotive-dataset-toolbox"]
+	path = prophesee-automotive-dataset-toolbox
+	url = https://github.com/prophesee-ai/prophesee-automotive-dataset-toolbox.git
