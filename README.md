@@ -1,4 +1,4 @@
-# Temporal Binary Representation Event Object Detection
+# Temporal Binary Represented Event Object Detection
 
 This repository contains a framework that can be used in order to perform object detection over events acquired from Event Cameras (https://en.wikipedia.org/wiki/Event_camera).
 To perform test the following technologies and tools have been employed:
