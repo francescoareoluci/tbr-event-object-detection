@@ -16,7 +16,7 @@ from src.io.psee_loader import PSEELoader
 def encode_video(N, width, height, video, encoder, show_frame=False):
     '''
         @brief: Encode an event video in a sequence of frame
-                using the Temporal Binary Encoding
+                using the Temporal Binary Representation
     '''
     
     # Each encoded frame will have a start/end timestamp (ms) in order
@@ -91,7 +91,7 @@ def get_frame_BB(frame, BB_array):
 
 def show_image(frame, bboxes):
     '''
-        @brief: show video of TBE frames and their bboxes
+        @brief: show video of TBR frames and their bboxes
                 during processing
     '''
 
@@ -118,7 +118,7 @@ def show_image(frame, bboxes):
 
 def save_bb_image(frame, bboxes, save_path):
     '''
-        @brief: save TBE frames with their bboxes
+        @brief: save TBR frames with their bboxes
     '''
 
     plt.imshow(frame, cmap='gray', vmin=0, vmax=1)
@@ -273,11 +273,11 @@ def setupArgParser():
 
     parser = argparse.ArgumentParser(description='Convert events to frames and associates bboxes')
     parser.add_argument('--use_stored_tbe', '-l', action='count', default=0,
-                        help='use_stored_tbe: instead of evaluates TBE, uses pre-evaluated TBE array. Default: false')
+                        help='use_stored_tbe: instead of evaluates TBR, uses pre-evaluated TBR array. Default: false')
     parser.add_argument('--save_tbe', '-s', action='count', default=0,
-                        help='save_tbe: save the intermediate Temporal Binary Encoded frame array. Default: false')
+                        help='save_tbe: save the intermediate Temporal Binary Represented frame array. Default: false')
     parser.add_argument('--show_video', '-v', action='count', default=0,
-                        help='show_video: show video with evaluated TBE frames and their bboxes during processing. Default: false')
+                        help='show_video: show video with evaluated TBR frames and their bboxes during processing. Default: false')
     parser.add_argument('--accumulate', '-n', type=int, nargs=1,
                         help='accumulator: set the number of events to be accumulated. Default: 16')
     parser.add_argument('--src_video', '-t', type=str, nargs=1,
@@ -340,8 +340,8 @@ if accumulate_requested and args.accumulate[0] > 0:
 ## Print some info
 print("Event to frame converter")
 print("===============================")
-print("Requested TBE array saving: " + str(save_tbe))
-print("Requested saved TBE array loading: " + str(use_stored_tbe))
+print("Requested TBR array saving: " + str(save_tbe))
+print("Requested saved TBR array loading: " + str(use_stored_tbe))
 print("Requested video show during processing: " + str(show_video))
 print("Accumulating {:d} events".format(N))
 print("Source event path: " + video_dir)
@@ -434,7 +434,7 @@ for video_name in video_names:
             show_image(f['frame'], bboxes)
             plt.pause(0.05)
 
-    print("Saved {:d} TBE frames in path: {:s}".format(img_count, dir_paths["images"]))
+    print("Saved {:d} TBR frames in path: {:s}".format(img_count, dir_paths["images"]))
     print("Saved {:d} bounding boxes annotations in path: {:s}".format(bbox_count, dir_paths["labels"]))
 
     completed_file = open(dir_paths['completed'], "a")

@@ -1,11 +1,11 @@
-# Temporal Binary Encoding Event Object Detection
+# Temporal Binary Representation Event Object Detection
 
 This repository contains a framework that can be used in order to perform object detection over events acquired from Event Cameras (https://en.wikipedia.org/wiki/Event_camera).
 To perform test the following technologies and tools have been employed:
 
 * Prophesee’s GEN1 Automotive Detection Dataset. This dataset contains events and their bounding boxes for pedestrian and vehicles (https://www.prophesee.ai/2020/01/24/prophesee-gen1-automotive-detection-dataset/)
 
-* Temporal Binary Encoding. This encoding have been developed in order to encode events into frames that can be feed to an object detector along with annotated bounding boxes. For further details check this paper: https://arxiv.org/pdf/2010.08946.pdf
+* Temporal Binary Representation. This encoding have been developed in order to encode events into frames that can be feed to an object detector along with annotated bounding boxes. For further details check this paper: https://arxiv.org/pdf/2010.08946.pdf
 
 * YOLOv3 as Object Detector
 
@@ -40,7 +40,7 @@ Events from the Prophesee’s GEN1 dataset can be converted to frames and boundi
 
 ``` 
 
-Under custom folder, the converted frames and bounding box annotations are stored in images and labels folder. Image types are specified in test, train and valid txt files. Already converted events are specified in completed_videos text file. Temporal Binary Encoded array can be stored in npy format in evaluated_tbe folder to avoid performing the conversion multiple times. 
+Under custom folder, the converted frames and bounding box annotations are stored in images and labels folder. Image types are specified in test, train and valid txt files. Already converted events are specified in completed_videos text file. Temporal Binary Represented array can be stored in npy format in evaluated_tbe folder to avoid performing the conversion multiple times. 
 
 ### Conversion
 
@@ -56,11 +56,11 @@ Convert events to frames and associates bboxes
 
 optional arguments:
   -h, --help            show this help message and exit
-  --use_stored_tbe, -l  use_stored_tbe: instead of evaluates TBE, uses pre-
-                        evaluated TBE array. Default: false
+  --use_stored_tbe, -l  use_stored_tbe: instead of evaluates TBR, uses pre-
+                        evaluated TBR array. Default: false
   --save_tbe, -s        save_tbe: save the intermediate Temporal Binary
-                        Encoded frame array. Default: false
-  --show_video, -v      show_video: show video with evaluated TBE frames and
+                        Represented frame array. Default: false
+  --show_video, -v      show_video: show video with evaluated TBR frames and
                         their bboxes during processing. Default: false
   --accumulate ACCUMULATE, -n ACCUMULATE
                         accumulator: set the number of events to be
@@ -88,6 +88,6 @@ To convert events from directory /dataset/test, store results in /dest/folder an
 Additional options are available in order to:
 * Change the number of events that should be accumulated - Option: -n X
 * Save converted frames with bboxes as image in a directory during processing - Option: -b /path/to/folder
-* Save the resulting TBE array in npy format - Option: -s
-* Load a TBE array - Option -l
+* Save the resulting TBR array in npy format - Option: -s
+* Load a TBR array - Option -l
 * Show video of converted frames and bboxes during processing - Option: -v
