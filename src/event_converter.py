@@ -13,7 +13,7 @@ sys.path.insert(0, '../prophesee-automotive-dataset-toolbox/')
 from src.io.psee_loader import PSEELoader
 
 
-def encode_video(N, width, height, video, encoder, show_frame=False):
+def encode_video(N, width, height, video, encoder, delta=1000):
     '''
         @brief: Encode an event video in a sequence of frame
                 using the Temporal Binary Representation
@@ -26,7 +26,7 @@ def encode_video(N, width, height, video, encoder, show_frame=False):
                             ('endTs', np.uint16), 
                             ('frame', np.float64, (height, width))])
     
-    samplePerVideo = math.ceil((video.total_time() / 1000) / N)
+    samplePerVideo = math.ceil((video.total_time() / delta) / N)
     accumulation_mat = np.zeros((N, height, width))
     tbe_array = np.zeros(samplePerVideo, dtype=data_type)
 
@@ -39,7 +39,7 @@ def encode_video(N, width, height, video, encoder, show_frame=False):
         while not video.done:
             i = (i + 1) % N
             # Load next 1ms events from the video
-            events = video.load_delta_t(1000)
+            events = video.load_delta_t(delta)
             f = np.zeros(video.get_size())
             #f = np.zeros((width, height))
             for e in events:
@@ -58,10 +58,6 @@ def encode_video(N, width, height, video, encoder, show_frame=False):
                 j += 1
                 startTimestamp += N
                 pbar.update(1)
-
-                if show_frame:
-                    plt.imshow(tbe); plt.colorbar()
-                    plt.show()
 
     return tbe_array
 
@@ -283,11 +279,13 @@ def setupArgParser():
     parser.add_argument('--src_video', '-t', type=str, nargs=1,
                         help='src_video: path to event videos')
     parser.add_argument('--dest_path', '-d', type=str, nargs=1,
-                    help='dest_path: path where images and bboxes will be stored')
+                        help='dest_path: path where images and bboxes will be stored')
     parser.add_argument('--event_type', '-e', type=str, nargs=1,
-                    help='event_type: specify data type: <train | validation | test>')
+                        help='event_type: specify data type: <train | validation | test>')
     parser.add_argument('--save_bb_img', '-b', type=str, nargs=1,
-                    help='save_bb_img: save frame with bboxes to path')
+                        help='save_bb_img: save frame with bboxes to path')
+    parser.add_argument('--accumulation_time', '-a', type=int, nargs=1,
+                        help='accumulation_time: set the quantization time of events (microseconds). Default: 1000')
 
     return parser.parse_args()
 
@@ -302,6 +300,7 @@ src_video_requested = True if args.src_video != None else False
 dest_path_requested = True if args.dest_path != None else False
 event_type_requested = True if args.event_type != None else False
 save_path_requested = True if args.save_bb_img != None else False
+accumulation_time_requested = True if args.accumulation_time != None else False
 
 dest_root_folder = '..'
 if dest_path_requested:
@@ -336,6 +335,11 @@ video_names = getEventList(video_dir)
 N = 16
 if accumulate_requested and args.accumulate[0] > 0:
     N = args.accumulate[0]
+
+## Accumulation time (microseconds)
+delta_t = 1000
+if accumulation_time_requested and args.accumulation_time[0] > 0:
+    delta_t = args.accumulation_time[0]
 
 ## Print some info
 print("Event to frame converter")
@@ -378,7 +382,7 @@ for video_name in video_names:
 
     if not use_stored_tbe:
         ## Convert event video to a Temporal Binary Encoded frames array
-        tbe_array = encode_video(N, width, height, video, encoder)
+        tbe_array = encode_video(N, width, height, video, encoder, delta_t)
         if save_tbe:
             np.save(dir_paths["tbe"] + video_name + "_tbe.npy", tbe_array)
     else:

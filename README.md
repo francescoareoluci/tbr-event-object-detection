@@ -51,6 +51,7 @@ usage: event_converter.py [-h] [--use_stored_tbe] [--save_tbe] [--show_video]
                           [--accumulate ACCUMULATE] [--src_video SRC_VIDEO]
                           [--dest_path DEST_PATH] [--event_type EVENT_TYPE]
                           [--save_bb_img SAVE_BB_IMG]
+                          [--accumulation_time ACCUMULATION_TIME]
 
 Convert events to frames and associates bboxes
 
@@ -74,6 +75,9 @@ optional arguments:
                         test>
   --save_bb_img SAVE_BB_IMG, -b SAVE_BB_IMG
                         save_bb_img: save frame with bboxes to path
+  --accumulation_time ACCUMULATION_TIME, -a ACCUMULATION_TIME
+                        accumulation_time: set the quantization time of events
+                        (microseconds). Default: 1000
 ```
 
 For example, to convert events from directory /dataset/train, store results in /dest/folder and label them as train data, run the following:
