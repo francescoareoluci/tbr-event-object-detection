@@ -39,9 +39,6 @@ if __name__ == "__main__":
     if save_path_requested:
         save_path = args.save_bb_img[0] + '/'
 
-    if save_path_requested and show_video:
-        print("Unable to save frames and showing video, using save frame as option")
-
     video_dir = "../train_events/"
     if src_video_requested:
         video_dir = args.src_video[0] + '/'
@@ -60,7 +57,8 @@ if __name__ == "__main__":
         if args.encoder[0] == 'tbe' or args.encoder[0] == 'polarity' or args.encoder[0] == 'sae':
             requested_encoder = args.encoder[0]
         else:
-            print("Invalid encoder requested. Using default encoder (tbe)")
+            print("Invalid encoder requested")
+            exit()
 
     ## Number of bits to be used in Temporal Binary Encoding
     tbr_bits = 16
@@ -79,7 +77,7 @@ if __name__ == "__main__":
     print("Requested saved encoded array loading: " + str(use_stored_encoding))
     print("Requested video show during processing: " + str(show_video))
     if requested_encoder == 'tbe':
-        print("Accumulating {:d} events".format(tbr_bits))
+        print("Using {:d} bits to represent events".format(tbr_bits))
     print("Accumulation time: " + str(delta_t))
     print("Source event path: " + video_dir)
     print("Destination path: " + dest_root_folder + '/data')
