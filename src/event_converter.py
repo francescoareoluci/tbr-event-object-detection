@@ -1,111 +1,17 @@
-import math
 import argparse
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
 from PIL import Image
-from tqdm import tqdm
+
+from encoders import *
+from utils import *
 from tbe import TemporalBinaryEncoding
+from cl_parser import CLParser
 
 import sys
 sys.path.insert(0, '../prophesee-automotive-dataset-toolbox/')
 from src.io.psee_loader import PSEELoader
-
-
-def encode_video_polarity(width, height, video, delta=20000):
-    '''
-        @brief: Encode video in a sequence of frames using
-                Polarity encoding
-    '''
-
-    # Each encoded frame will have a start/end timestamp (ms) in order
-    # to associate bounding boxes later.
-    # Note: If videos are longer than 1 minutes, 16 bits per ts are not sufficient.
-    data_type = np.dtype([('startTs', np.uint16), 
-                            ('endTs', np.uint16), 
-                            ('frame', np.float64, (height, width))])
-    
-    samplePerVideo = math.ceil(video.total_time() / delta)
-    polarity_array = np.zeros(samplePerVideo, dtype=data_type)
-
-    i = 0
-    startTimestamp = 0
-    endTimestamp = 0
-
-    pbar = tqdm(total=samplePerVideo, file=sys.stdout)
-    while not video.done:
-        events = video.load_delta_t(delta)
-        f = np.full(video.get_size(), 0.5)
-        for e in events:
-            # Evaluate polarity of an event 
-            # for a certain pixel
-            if e['p'] == 1:
-                f[e['y'], e['x']] = 1
-            else:
-                f[e['y'], e['x']] = 0
-
-        endTimestamp += delta / 1000
-        polarity_array[i]['startTs'] = startTimestamp
-        polarity_array[i]['endTs'] = endTimestamp
-        polarity_array[i]['frame'] = f
-        startTimestamp += delta / 1000
-        i += 1
-        
-        pbar.update(1)
-
-    pbar.close()
-    return polarity_array
-
-
-def encode_video_tbe(N, width, height, video, encoder, delta=1000):
-    '''
-        @brief: Encode an event video in a sequence of frame
-                using the Temporal Binary Representation
-    '''
-    
-    # Each encoded frame will have a start/end timestamp (ms) in order
-    # to associate bounding boxes later.
-    # Note: If videos are longer than 1 minutes, 16 bits per ts are not sufficient.
-    data_type = np.dtype([('startTs', np.uint16), 
-                            ('endTs', np.uint16), 
-                            ('frame', np.float64, (height, width))])
-    
-    samplePerVideo = math.ceil((video.total_time() / delta) / N)
-    accumulation_mat = np.zeros((N, height, width))
-    tbe_array = np.zeros(samplePerVideo, dtype=data_type)
-
-    i = 0
-    j = 0
-    startTimestamp = 0
-    endTimestamp = 0
-
-    pbar = tqdm(total = samplePerVideo, file = sys.stdout)
-    while not video.done:
-        i = (i + 1) % N
-        # Load next 1ms events from the video
-        events = video.load_delta_t(delta)
-        f = np.zeros(video.get_size())
-        #f = np.zeros((width, height))
-        for e in events:
-            # Evaluate presence/absence of event for
-            # a certain pixel
-            f[e['y'], e['x']] = 1
-
-        accumulation_mat[i, ...] = f
-
-        if i == N - 1:
-            endTimestamp += N
-            tbe = encoder.encode(accumulation_mat)
-            tbe_array[j]['startTs'] = startTimestamp
-            tbe_array[j]['endTs'] = endTimestamp
-            tbe_array[j]['frame'] = tbe
-            j += 1
-            startTimestamp += N
-            pbar.update(1)
-    
-    pbar.close()
-    return tbe_array
 
 
 def get_frame_BB(frame, BB_array):
@@ -129,82 +35,6 @@ def get_frame_BB(frame, BB_array):
             break
     
     return np.array(associated_bb)
-
-
-def show_image(frame, bboxes):
-    '''
-        @brief: show video of TBR frames and their bboxes
-                during processing
-    '''
-
-    plt.figure(1)
-    plt.clf()
-    plt.imshow(frame, animated=True, cmap='gray', vmin=0, vmax=1)
-    plt.colorbar()
-
-    # Get the current reference
-    ax = plt.gca()
-
-    # Create Rectangle boxes
-    for b in bboxes:
-        if b[5] == 1:
-            # Person
-            rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='g', facecolor='none')
-        else:
-            # Vehicle
-            rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='r', facecolor='none')
-
-        # Add the patch to the Axes
-        ax.add_patch(rect)
-
-
-def save_bb_image(frame, bboxes, save_path):
-    '''
-        @brief: save TBR frames with their bboxes
-    '''
-
-    plt.imshow(frame, cmap='gray', vmin=0, vmax=1)
-
-    # Get the current reference
-    ax = plt.gca()
-
-    # Create Rectangle boxes
-    for b in bboxes:
-        if b[5] == 1:
-            # Person
-            rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='g', facecolor='none')
-        else:
-            # Vehicle
-            rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='r', facecolor='none')
-
-        # Add the patch to the Axes
-        ax.add_patch(rect)
-    
-    if len(bboxes) != 0:
-        plt.savefig(save_path)
-        plt.close()
-        
-
-def convertBBoxCoords(bbox, image_width, image_height):
-    '''
-        @brief: Converts top-left starting coordinates to
-                rectangle-centered coordinates. Moreover,
-                coordinates and size are normalized.
-        @return: np array compliant to YOLOV3 implementation.
-    '''
-
-    top_left_x = bbox[1]
-    top_left_y = bbox[2]
-    width = bbox[3]
-    height = bbox[4]
-    norm_center_x = float((top_left_x + (width / 2)) / image_width)
-    norm_center_y = float((top_left_y + (height / 2)) / image_height)
-    norm_width = float(width / image_width)
-    norm_height = float(height / image_height)
-
-    new_bbox = np.array([int(bbox[5]), norm_center_x, norm_center_y, norm_width, norm_height])
-    
-    return new_bbox
 
 
 def setupDirectories(root_dir):
@@ -307,39 +137,9 @@ def getEventList(directory):
     return filtered_file_list
 
 
-def setupArgParser():
-    '''
-        @brief: Setup command line arguments 
-        @return: parsed arguments
-    '''
-
-    parser = argparse.ArgumentParser(description='Convert events to frames and associates bboxes')
-    parser.add_argument('--use_stored_enc', '-l', action='count', default=0,
-                        help='use_stored_enc: instead of evaluates TBR or other encodings, uses pre-evaluated encoded array. Default: false')
-    parser.add_argument('--save_enc', '-s', action='count', default=0,
-                        help='save_enc: save the intermediate TBR or other encodings frame array. Default: false')
-    parser.add_argument('--show_video', '-v', action='count', default=0,
-                        help='show_video: show video with evaluated TBR frames and their bboxes during processing. Default: false')
-    parser.add_argument('--tbr_bits', '-n', type=int, nargs=1,
-                        help='tbr_bits: set the number of bits for Temporal Binary Representation. Default: 16')
-    parser.add_argument('--src_video', '-t', type=str, nargs=1,
-                        help='src_video: path to event videos')
-    parser.add_argument('--dest_path', '-d', type=str, nargs=1,
-                        help='dest_path: path where images and bboxes will be stored')
-    parser.add_argument('--event_type', '-e', type=str, nargs=1,
-                        help='event_type: specify data type: <train | validation | test>')
-    parser.add_argument('--save_bb_img', '-b', type=str, nargs=1,
-                        help='save_bb_img: save frame with bboxes to path')
-    parser.add_argument('--accumulation_time', '-a', type=int, nargs=1,
-                        help='accumulation_time: set the quantization time of events (microseconds). Default: 1000')
-    parser.add_argument('--encoder', '-c', type=str, nargs=1,
-                        help='encoder: set the encoder: <tbe | polarity>. Default: tbe')
-
-    return parser.parse_args()
-
-
 ## Parsing arguments
-args = setupArgParser()
+parser = CLParser()
+args = parser.parse()
 save_encoding = True if args.save_enc > 0 else False
 use_stored_encoding = True if args.use_stored_enc > 0 else False
 show_video = True if args.show_video > 0 else False
@@ -458,18 +258,15 @@ for video_name in video_names:
     ## Iterate through video frames
     img_count = 0
     bbox_count = 0
-    print("Saving TBE frames and bounding boxes...")
+    print("Saving encoded frames and bounding boxes...")
     for f in encoded_array:
         bboxes = get_frame_BB(f, arr)
 
         filename = video_name + str("_" + str(f["startTs"]))
         ## Save images that have at least a bbox
         if len(bboxes) != 0:
-            #print(bboxes)
-
             ## Save image
             plt.imsave(dir_paths["images"] + "/" + filename + ".jpg", f['frame'], vmin=0, vmax=1, cmap='gray')
-            #print(f['frame'].shape)
 
             ## Update train or validation txt file (append if not existing)
             with open(dir_paths[txt_list_file], "r+") as list_txt_file:
