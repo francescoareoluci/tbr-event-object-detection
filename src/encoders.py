@@ -6,7 +6,60 @@ from tqdm import tqdm
 from tbe import TemporalBinaryEncoding
 
 
-def encode_video_polarity(width, height, video, delta=20000):
+def encode_video_sae(width, height, video, delta=2500):
+    '''
+        @brief: Encode video in a sequence of frames using
+                Surface Active Event (SAE) encoding
+        @param: width
+        @param: height
+        @param: video - loaded from PSEELoader
+        @param: delta - accumulation time
+        @return: encoded frames as a Numpy array
+                 with the following structure:
+                 [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
+    '''
+
+    print("Starting Surface Active Event encoding...")
+
+    # Each encoded frame will have a start/end timestamp (ms) in order
+    # to associate bounding boxes later.
+    # Note: If videos are longer than 1 minutes, 16 bits per ts are not sufficient.
+    data_type = np.dtype([('startTs', np.uint16), 
+                            ('endTs', np.uint16), 
+                            ('frame', np.float32, (height, width))])
+    
+    samplePerVideo = math.ceil(video.total_time() / delta)
+    sae_array = np.zeros(samplePerVideo, dtype=data_type)
+
+    i = 0
+    startTimestamp = 0  # milliseconds
+    endTimestamp = 0    # milliseconds
+
+    pbar = tqdm(total=samplePerVideo, file=sys.stdout)
+    while not video.done:
+        events = video.load_delta_t(delta)
+        f = np.zeros(video.get_size())
+        for e in events:
+            # Evaluate polarity of an event 
+            # for a certain pixel
+            t_p = e['t']                    # microseconds
+            t_0 = startTimestamp * 1000     # microseconds
+            f[e['y'], e['x']] = 255 * ((t_p - t_0) / delta)
+
+        endTimestamp += delta / 1000
+        sae_array[i]['startTs'] = startTimestamp
+        sae_array[i]['endTs'] = endTimestamp
+        sae_array[i]['frame'] = f
+        startTimestamp += delta / 1000
+        i += 1
+        
+        pbar.update(1)
+
+    pbar.close()
+    return sae_array
+
+
+def encode_video_polarity(width, height, video, delta=2500):
     '''
         @brief: Encode video in a sequence of frames using
                 Polarity encoding
@@ -19,19 +72,21 @@ def encode_video_polarity(width, height, video, delta=20000):
                  [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
     '''
 
+    print("Starting Polarity Encoding...")
+
     # Each encoded frame will have a start/end timestamp (ms) in order
     # to associate bounding boxes later.
     # Note: If videos are longer than 1 minutes, 16 bits per ts are not sufficient.
     data_type = np.dtype([('startTs', np.uint16), 
                             ('endTs', np.uint16), 
-                            ('frame', np.float64, (height, width))])
+                            ('frame', np.float32, (height, width))])
     
     samplePerVideo = math.ceil(video.total_time() / delta)
     polarity_array = np.zeros(samplePerVideo, dtype=data_type)
 
     i = 0
-    startTimestamp = 0
-    endTimestamp = 0
+    startTimestamp = 0   # milliseconds
+    endTimestamp = 0     # milliseconds
 
     pbar = tqdm(total=samplePerVideo, file=sys.stdout)
     while not video.done:
@@ -58,7 +113,7 @@ def encode_video_polarity(width, height, video, delta=20000):
     return polarity_array
 
 
-def encode_video_tbe(N, width, height, video, encoder, delta=1000):
+def encode_video_tbe(N, width, height, video, encoder, delta=2500):
     '''
         @brief: Encode an event video in a sequence of frame
                 using the Temporal Binary Representation
@@ -73,12 +128,14 @@ def encode_video_tbe(N, width, height, video, encoder, delta=1000):
                  [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
     '''
     
+    print("Starting Temporal Binary Encoding...")
+
     # Each encoded frame will have a start/end timestamp (ms) in order
     # to associate bounding boxes later.
     # Note: If videos are longer than 1 minutes, 16 bits per ts are not sufficient.
     data_type = np.dtype([('startTs', np.uint16), 
                             ('endTs', np.uint16), 
-                            ('frame', np.float64, (height, width))])
+                            ('frame', np.float32, (height, width))])
     
     samplePerVideo = math.ceil((video.total_time() / delta) / N)
     accumulation_mat = np.zeros((N, height, width))
@@ -86,8 +143,8 @@ def encode_video_tbe(N, width, height, video, encoder, delta=1000):
 
     i = 0
     j = 0
-    startTimestamp = 0
-    endTimestamp = 0
+    startTimestamp = 0  # milliseconds
+    endTimestamp = 0    # milliseconds
 
     pbar = tqdm(total = samplePerVideo, file = sys.stdout)
     while not video.done:
@@ -95,7 +152,6 @@ def encode_video_tbe(N, width, height, video, encoder, delta=1000):
         # Load next 1ms events from the video
         events = video.load_delta_t(delta)
         f = np.zeros(video.get_size())
-        #f = np.zeros((width, height))
         for e in events:
             # Evaluate presence/absence of event for
             # a certain pixel
@@ -104,13 +160,13 @@ def encode_video_tbe(N, width, height, video, encoder, delta=1000):
         accumulation_mat[i, ...] = f
 
         if i == N - 1:
-            endTimestamp += N
+            endTimestamp += (N * delta) / 1000
             tbe = encoder.encode(accumulation_mat)
             tbe_array[j]['startTs'] = startTimestamp
             tbe_array[j]['endTs'] = endTimestamp
             tbe_array[j]['frame'] = tbe
             j += 1
-            startTimestamp += N
+            startTimestamp += (N * delta) / 1000
             pbar.update(1)
     
     pbar.close()

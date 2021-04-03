@@ -57,7 +57,7 @@ if __name__ == "__main__":
     ## Encoder
     requested_encoder = 'tbe'
     if encoder_type_requested:
-        if args.encoder[0] == 'tbe' or args.encoder[0] == 'polarity':
+        if args.encoder[0] == 'tbe' or args.encoder[0] == 'polarity' or args.encoder[0] == 'sae':
             requested_encoder = args.encoder[0]
         else:
             print("Invalid encoder requested. Using default encoder (tbe)")
@@ -123,10 +123,10 @@ if __name__ == "__main__":
             ## Convert event video to a Temporal Binary Encoded frames array
             if requested_encoder == 'tbe':
                 encoded_array = encode_video_tbe(tbr_bits, width, height, gen1_video, encoder, delta_t)
-            elif requested_encoder == 'polarity' and accumulation_time_requested:
+            elif requested_encoder == 'polarity':
                 encoded_array = encode_video_polarity(width, height, gen1_video, delta_t)
             else:
-                encoded_array = encode_video_polarity(width, height, gen1_video)
+                encoded_array = encode_video_sae(width, height, gen1_video, delta_t)
 
             if save_encoding:
                 np.save(dir_paths["enc"] + video_name + "_enc.npy", encoded_array)

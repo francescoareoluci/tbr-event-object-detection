@@ -26,7 +26,7 @@ class CLParser:
         self._parser.add_argument('--accumulation_time', '-a', type=int, nargs=1,
                         help='accumulation_time: set the quantization time of events (microseconds). Default: 1000')
         self._parser.add_argument('--encoder', '-c', type=str, nargs=1,
-                        help='encoder: set the encoder: <tbe | polarity>. Default: tbe')
+                        help='encoder: set the encoder: <tbe | polarity | sae>. Default: tbe')
 
     def parse(self):
         '''
