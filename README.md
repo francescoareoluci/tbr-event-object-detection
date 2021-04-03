@@ -40,32 +40,36 @@ Events from the Prophesee’s GEN1 dataset can be converted to frames and boundi
 
 ``` 
 
-Under custom folder, the converted frames and bounding box annotations are stored in images and labels folder. Image types are specified in test, train and valid txt files. Already converted events are specified in completed_videos text file. Temporal Binary Represented array can be stored in npy format in evaluated_tbe folder to avoid performing the conversion multiple times. 
+Under custom folder, the converted frames and bounding box annotations are stored in images and labels folder. Image types are specified in test, train and valid txt files. Already converted events are specified in completed_videos text file. Temporal Binary Represented array can be stored in npy format in evaluated_tbe folder to avoid performing the conversion multiple times.
+Moreover, other types of conversion have been implemented in order to compare the results of Temporal Binary Represented event object detection (Polarity encoding).
 
 ### Conversion
 
 The conversion can be executed using src/event_converted.py file:
 > python event_converter.py -h
 ``` bash
-usage: event_converter.py [-h] [--use_stored_tbe] [--save_tbe] [--show_video]
-                          [--accumulate ACCUMULATE] [--src_video SRC_VIDEO]
+Event to frame converter
+usage: event_converter.py [-h] [--use_stored_enc] [--save_enc] [--show_video]
+                          [--tbr_bits TBR_BITS] [--src_video SRC_VIDEO]
                           [--dest_path DEST_PATH] [--event_type EVENT_TYPE]
                           [--save_bb_img SAVE_BB_IMG]
                           [--accumulation_time ACCUMULATION_TIME]
+                          [--encoder ENCODER]
 
 Convert events to frames and associates bboxes
 
 optional arguments:
   -h, --help            show this help message and exit
-  --use_stored_tbe, -l  use_stored_tbe: instead of evaluates TBR, uses pre-
-                        evaluated TBR array. Default: false
-  --save_tbe, -s        save_tbe: save the intermediate Temporal Binary
-                        Represented frame array. Default: false
+  --use_stored_enc, -l  use_stored_enc: instead of evaluates TBR or other
+                        encodings, uses pre-evaluated encoded array. Default:
+                        false
+  --save_enc, -s        save_enc: save the intermediate TBR or other encodings
+                        frame array. Default: false
   --show_video, -v      show_video: show video with evaluated TBR frames and
                         their bboxes during processing. Default: false
-  --accumulate ACCUMULATE, -n ACCUMULATE
-                        accumulator: set the number of events to be
-                        accumulated. Default: 16
+  --tbr_bits TBR_BITS, -n TBR_BITS
+                        tbr_bits: set the number of bits for Temporal Binary
+                        Representation. Default: 16
   --src_video SRC_VIDEO, -t SRC_VIDEO
                         src_video: path to event videos
   --dest_path DEST_PATH, -d DEST_PATH
@@ -78,6 +82,9 @@ optional arguments:
   --accumulation_time ACCUMULATION_TIME, -a ACCUMULATION_TIME
                         accumulation_time: set the quantization time of events
                         (microseconds). Default: 1000
+  --encoder ENCODER, -c ENCODER
+                        encoder: set the encoder: <tbe | polarity>. Default:
+                        tbe
 ```
 
 For example, to convert events from directory /dataset/train, store results in /dest/folder and label them as train data, run the following:
@@ -90,8 +97,10 @@ To convert events from directory /dataset/test, store results in /dest/folder an
 > python event_converter.py --src_video /dataset/test --dest_path /dest/folder
 
 Additional options are available in order to:
-* Change the number of events that should be accumulated - Option: -n X
+* Change the number of bits that should be used in TBR - Option: -n X
 * Save converted frames with bboxes as image in a directory during processing - Option: -b /path/to/folder
-* Save the resulting TBR array in npy format - Option: -s
-* Load a TBR array - Option -l
+* Save the resulting encoded array in npy format - Option: -s
+* Load an encoded array - Option -l
 * Show video of converted frames and bboxes during processing - Option: -v
+* Change the accumulation time - Option: -a
+* Change encoder in order to store frames in other formats - Option: -c <tbe | polarity>
