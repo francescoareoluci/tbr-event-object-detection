@@ -1,4 +1,3 @@
-import argparse
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,29 +11,6 @@ from cl_parser import CLParser
 import sys
 sys.path.insert(0, '../prophesee-automotive-dataset-toolbox/')
 from src.io.psee_loader import PSEELoader
-
-
-def get_frame_BB(frame, BB_array):
-    '''
-        @brief: Associates to Temporal Binary Encoded video frame
-                a list of bounding boxes with timestamp included in 
-                start/end timestamp of the frame. 
-        @return: The associated BB.
-    '''
-
-    associated_bb = []
-    for bb in BB_array:
-        # Convert timestamp to milliseconds
-        timestamp = bb[0] / 1000
-        startTime = frame['startTs']
-        endTime = frame['endTs']
-        if timestamp >= startTime and timestamp <= endTime:
-            associated_bb.append(bb)
-        # Avoid useless iterations
-        if timestamp > endTime:
-            break
-    
-    return np.array(associated_bb)
 
 
 def setupDirectories(root_dir):
@@ -138,6 +114,8 @@ def getEventList(directory):
 
 
 ## Parsing arguments
+print("Event to frame converter")
+
 parser = CLParser()
 args = parser.parse()
 save_encoding = True if args.save_enc > 0 else False
@@ -177,9 +155,6 @@ if event_type_requested:
         print("Invalid event type requested. Supported: <train | validation | test>.")
         exit()
 
-## Iterate through videos in video_dir to get list 
-video_names = getEventList(video_dir)
-
 ## Encoder
 requested_encoder = 'tbe'
 if encoder_type_requested:
@@ -199,11 +174,10 @@ if accumulation_time_requested and args.accumulation_time[0] > 0:
     delta_t = args.accumulation_time[0]
 
 ## Print some info
-print("Event to frame converter")
 print("===============================")
 print("Encoder: " + requested_encoder)
-print("Requested TBR array saving: " + str(save_encoding))
-print("Requested saved TBR array loading: " + str(use_stored_encoding))
+print("Requested encoded array saving: " + str(save_encoding))
+print("Requested saved encoded array loading: " + str(use_stored_encoding))
 print("Requested video show during processing: " + str(show_video))
 if requested_encoder == 'tbe':
     print("Accumulating {:d} events".format(N))
@@ -219,6 +193,9 @@ elif data_type == 'validation':
     txt_list_file = 'valid_file'
 else:
     txt_list_file = 'test_file'
+
+## Iterate through videos in video_dir to get list 
+video_names = getEventList(video_dir)
 
 ## Iterate videos
 for video_name in video_names:

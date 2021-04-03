@@ -10,6 +10,13 @@ def encode_video_polarity(width, height, video, delta=20000):
     '''
         @brief: Encode video in a sequence of frames using
                 Polarity encoding
+        @param: width
+        @param: height
+        @param: video - loaded from PSEELoader
+        @param: delta - accumulation time
+        @return: encoded frames as a Numpy array
+                 with the following structure:
+                 [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
     '''
 
     # Each encoded frame will have a start/end timestamp (ms) in order
@@ -55,6 +62,15 @@ def encode_video_tbe(N, width, height, video, encoder, delta=1000):
     '''
         @brief: Encode an event video in a sequence of frame
                 using the Temporal Binary Representation
+        @param: N - number of bits to be used
+        @param: width
+        @param: height
+        @param: video - loaded from PSEELoader
+        @param: encoded - TBE encoder
+        @param: delta - accumulation time
+        @return: encoded frames as a Numpy array
+                 with the following structure:
+                 [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
     '''
     
     # Each encoded frame will have a start/end timestamp (ms) in order
@@ -99,3 +115,31 @@ def encode_video_tbe(N, width, height, video, encoder, delta=1000):
     
     pbar.close()
     return tbe_array
+
+
+def get_frame_BB(frame, BB_array):
+    '''
+        @brief: Associates to an encoded video frame
+                a list of bounding boxes with timestamp included in 
+                start/end timestamp of the frame. 
+        @param: frame - Encoded frame with the following structure:
+                        [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
+                        (i.e. as the one returned from the encoders fuctions)
+        @param: BB_array - Bounding Boxes array, 
+                           loaded from the GEN1 .npy arrays
+        @return: The associated BBoxes.
+    '''
+
+    associated_bb = []
+    for bb in BB_array:
+        # Convert timestamp to milliseconds
+        timestamp = bb[0] / 1000
+        startTime = frame['startTs']
+        endTime = frame['endTs']
+        if timestamp >= startTime and timestamp <= endTime:
+            associated_bb.append(bb)
+        # Avoid useless iterations
+        if timestamp > endTime:
+            break
+    
+    return np.array(associated_bb)

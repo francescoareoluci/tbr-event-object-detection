@@ -18,6 +18,8 @@ class TemporalBinaryEncoding:
     def encode(self, mat):
         '''
             @brief: Encode events using binary encoding
+            @param: mat
+            @return: Encoded frame
         '''
 
         frame = np.sum((mat * self._mask), 0) / (2 ** self.N)

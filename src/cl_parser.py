@@ -31,6 +31,7 @@ class CLParser:
     def parse(self):
         '''
             @brief: parse the command line arguments
+            @return: parsed arguments
         '''
 
         return self._parser.parse_args()
