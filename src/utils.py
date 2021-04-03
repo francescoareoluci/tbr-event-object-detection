@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
@@ -43,6 +44,7 @@ def save_bb_image(frame, bboxes, save_path):
     '''
 
     plt.imshow(frame, cmap='gray', vmin=0, vmax=1)
+    plt.axis('off')
 
     ## Get the current reference
     ax = plt.gca()
@@ -60,7 +62,7 @@ def save_bb_image(frame, bboxes, save_path):
         ax.add_patch(rect)
     
     if len(bboxes) != 0:
-        plt.savefig(save_path)
+        plt.savefig(save_path, bbox_inches='tight')
         plt.close()
         
 
