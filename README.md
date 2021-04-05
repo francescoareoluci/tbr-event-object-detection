@@ -21,6 +21,7 @@ Once this repository have been cloned, run:
 ## Requirements
 
 In order to execute the conversion and the object detection, use the environment.yml file to create a dedicated Conda environment.
+Note: if you have a NVidia graphic card compatible with CUDA, use the environment_cuda.yml environment in order to use the GPU with YOLO.
 
 ## Convert events to frames
 
