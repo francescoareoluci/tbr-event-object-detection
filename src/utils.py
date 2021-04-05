@@ -17,19 +17,19 @@ def show_image(frame, bboxes):
     plt.imshow(frame, animated=True, cmap='gray', vmin=0, vmax=1)
     plt.colorbar()
 
-    ## Get the current reference
+    # Get the current reference
     ax = plt.gca()
 
-    ## Create Rectangle boxes
+    # Create Rectangle boxes
     for b in bboxes:
         if b[5] == 1:
-            ## Person
+            # Person
             rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='g', facecolor='none')
         else:
-            ## Vehicle
+            # Vehicle
             rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='r', facecolor='none')
 
-        ## Add the patch to the Axes
+        # Add the patch to the Axes
         ax.add_patch(rect)
 
 
@@ -46,19 +46,19 @@ def save_bb_image(frame, bboxes, save_path):
     plt.imshow(frame, cmap='gray', vmin=0, vmax=1)
     plt.axis('off')
 
-    ## Get the current reference
+    # Get the current reference
     ax = plt.gca()
 
-    ## Create Rectangle boxes
+    # Create Rectangle boxes
     for b in bboxes:
         if b[5] == 1:
-            ## Person
+            # Person
             rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='g', facecolor='none')
         else:
-            ## Vehicle
+            # Vehicle
             rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='r', facecolor='none')
 
-        ## Add the patch to the Axes
+        # Add the patch to the Axes
         ax.add_patch(rect)
     
     if len(bboxes) != 0:

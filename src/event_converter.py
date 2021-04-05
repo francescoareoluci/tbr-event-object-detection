@@ -17,7 +17,7 @@ from src.io.psee_loader import PSEELoader
 if __name__ == "__main__":
     print("Event to frame converter")
 
-    ## Parsing arguments
+    # Parsing arguments
     parser = CLParser()
     args = parser.parse()
     save_encoding = True if args.save_enc > 0 else False
@@ -51,7 +51,7 @@ if __name__ == "__main__":
             print("Invalid event type requested. Supported: <train | validation | test>.")
             exit()
 
-    ## Encoder
+    # Encoder
     requested_encoder = 'tbe'
     if encoder_type_requested:
         if args.encoder[0] == 'tbe' or args.encoder[0] == 'polarity' or args.encoder[0] == 'sae':
@@ -60,17 +60,17 @@ if __name__ == "__main__":
             print("Invalid encoder requested")
             exit()
 
-    ## Number of bits to be used in Temporal Binary Encoding
+    # Number of bits to be used in Temporal Binary Encoding
     tbr_bits = 16
     if tbr_bits_requested and args.tbr_bits[0] > 0:
         tbr_bits = args.tbr_bits[0]
 
-    ## Accumulation time (microseconds)
+    # Accumulation time (microseconds)
     delta_t = 1000
     if accumulation_time_requested and args.accumulation_time[0] > 0:
         delta_t = args.accumulation_time[0]
 
-    ## Print some info
+    # Print some info
     print("===============================")
     print("Encoder: " + requested_encoder)
     print("Requested encoded array saving: " + str(save_encoding))
@@ -91,13 +91,13 @@ if __name__ == "__main__":
     else:
         txt_list_file = 'test_file'
 
-    ## Setup data directory to save files (images, bboxes and labels)
+    # Setup data directory to save files (images, bboxes and labels)
     dir_paths = setupDirectories(dest_root_folder)
 
-    ## Iterate through videos in video_dir to get list 
+    # Iterate through videos in video_dir to get list 
     video_names = getEventList(video_dir)
 
-    ## Iterate videos
+    # Iterate videos
     for video_name in video_names:
         video_path = video_dir + video_name
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
         gen1_bboxes = np.load(video_path + "_bbox.npy")
 
-        ## Load video
+        # Load video
         gen1_video = PSEELoader(video_path + "_td.dat")
 
         width = gen1_video.get_size()[1]
@@ -118,7 +118,7 @@ if __name__ == "__main__":
         encoder = TemporalBinaryEncoding(tbr_bits, width, height)
 
         if not use_stored_encoding:
-            ## Convert event video to a Temporal Binary Encoded frames array
+            # Convert event video to a Temporal Binary Encoded frames array
             if requested_encoder == 'tbe':
                 encoded_array = encode_video_tbe(tbr_bits, width, height, gen1_video, encoder, delta_t)
             elif requested_encoder == 'polarity':
@@ -129,10 +129,10 @@ if __name__ == "__main__":
             if save_encoding:
                 np.save(dir_paths["enc"] + video_name + "_enc.npy", encoded_array)
         else:
-            ## Use the pre-evaluated encoded (tbe or else) array
+            # Use the pre-evaluated encoded (tbe or else) array
             encoded_array = np.load(dir_paths["enc"] + video_name + "_enc.npy")
 
-        ## Iterate through video frames
+        # Iterate through video frames
         img_count = 0
         bbox_count = 0
         print("Saving encoded frames and bounding boxes...")
@@ -140,24 +140,24 @@ if __name__ == "__main__":
             bboxes = get_frame_BB(f, gen1_bboxes)
 
             filename = video_name + str("_" + str(f["startTs"]))
-            ## Save images that have at least a bbox
+            # Save images that have at least a bbox
             if len(bboxes) != 0:
-                ## Save image
+                # Save image
                 plt.imsave(dir_paths["images"] + "/" + filename + ".jpg", f['frame'], vmin=0, vmax=1, cmap='gray')
 
-                ## Update train or validation txt file (append if not existing)
+                # Update train or validation txt file (append if not existing)
                 with open(dir_paths[txt_list_file], "r+") as list_txt_file:
                     file_string = dir_paths["list"] + filename + ".jpg"
                     for line in list_txt_file:
-                        ## Search for image file path in this file
+                        # Search for image file path in this file
                         if file_string in line:
                             break
                     else:   # Note: this indentation is intentional
-                        ## If entered, the string does not exist in this file
-                        ## Append file path
+                        # If entered, the string does not exist in this file
+                        # Append file path
                         list_txt_file.write(file_string + "\n")
 
-                ## Write BBoxes in labels
+                # Write BBoxes in labels
                 label_file = open(dir_paths["labels"] + "/" + filename + ".txt", "w")
                 for b in bboxes:
                     conv_bbox = convertBBoxCoords(b, width, height)

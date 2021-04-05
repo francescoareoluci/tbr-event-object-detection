@@ -46,7 +46,7 @@ def setupDirectories(root_dir):
     if not os.path.isdir(evaluated_enc_path):
         os.mkdir(evaluated_enc_path)
 
-    ## Setup classes
+    # Setup classes
     f = open(classes_file_path, "w")
     f.write("vehicle\n")
     f.write("pedestrian\n")

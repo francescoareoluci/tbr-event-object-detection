@@ -14,9 +14,10 @@ def encode_video_sae(width, height, video, delta=2500):
         @param: height
         @param: video - loaded from PSEELoader
         @param: delta - accumulation time
-        @return: encoded frames as a Numpy array
-                 with the following structure:
-                 [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
+        @return: encoded frames as a Numpy array with the following data type:
+                 [('startTs', np.uint16), 
+                  ('endTs', np.uint16), 
+                  ('frame', np.float32, (height, width))]
     '''
 
     print("Starting Surface Active Event encoding...")
@@ -67,9 +68,10 @@ def encode_video_polarity(width, height, video, delta=2500):
         @param: height
         @param: video - loaded from PSEELoader
         @param: delta - accumulation time
-        @return: encoded frames as a Numpy array
-                 with the following structure:
-                 [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
+        @return: encoded frames as a Numpy array with the following data type:
+                 [('startTs', np.uint16), 
+                  ('endTs', np.uint16), 
+                  ('frame', np.float32, (height, width))]
     '''
 
     print("Starting Polarity Encoding...")
@@ -123,9 +125,10 @@ def encode_video_tbe(N, width, height, video, encoder, delta=2500):
         @param: video - loaded from PSEELoader
         @param: encoded - TBE encoder
         @param: delta - accumulation time
-        @return: encoded frames as a Numpy array
-                 with the following structure:
-                 [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
+        @return: encoded frames as a Numpy array with the following data type:
+                 [('startTs', np.uint16), 
+                  ('endTs', np.uint16), 
+                  ('frame', np.float32, (height, width))]
     '''
     
     print("Starting Temporal Binary Encoding...")
