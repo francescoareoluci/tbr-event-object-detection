@@ -4,11 +4,13 @@
 
 pedestrians=0
 vehicles=0
+images=0
 
 readarray -t a < "$1"
 
 for txt in "${a[@]}"
 do
+	images=$((images+1))
 	filename=$(basename "$txt")
 	filename="${filename%.*}.txt"
     while read line; do
@@ -24,5 +26,6 @@ do
 	done < "$2"/"$filename"
 done
 
+echo "Images: $images"
 echo "Vehicles: $vehicles"
 echo "Pedestrians: $pedestrians"
