@@ -42,7 +42,7 @@ Events from the Prophesee’s GEN1 dataset can be converted to frames and boundi
 ``` 
 
 Under custom folder, the converted frames and bounding box annotations are stored in images and labels folder. Image types are specified in test, train and valid txt files. Already converted events are specified in completed_videos text file. Temporal Binary Represented array can be stored in npy format in evaluated_tbe folder to avoid performing the conversion multiple times.
-Moreover, other types of conversion have been implemented in order to compare the results of Temporal Binary Represented event object detection (Polarity encoding).
+Moreover, other types of conversion have been implemented in order to compare the results of Temporal Binary Represented event object detection (Polarity and Surface Active Events encoding).
 
 ### Conversion
 
@@ -84,7 +84,7 @@ optional arguments:
                         accumulation_time: set the quantization time of events
                         (microseconds). Default: 1000
   --encoder ENCODER, -c ENCODER
-                        encoder: set the encoder: <tbe | polarity>. Default:
+                        encoder: set the encoder: <tbe | polarity | sae>. Default:
                         tbe
 ```
 
@@ -104,4 +104,4 @@ Additional options are available in order to:
 * Load an encoded array - Option -l
 * Show video of converted frames and bboxes during processing - Option: -v
 * Change the accumulation time - Option: -a
-* Change encoder in order to store frames in other formats - Option: -c <tbe | polarity>
+* Change encoder in order to store frames in other formats - Option: -c <tbe | polarity | sae>

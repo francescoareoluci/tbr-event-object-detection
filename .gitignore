@@ -1,2 +1,5 @@
 data
+train_events
+valid_events
+test_events
 */__pycache__
