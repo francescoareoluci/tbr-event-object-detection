@@ -1,9 +1,13 @@
+"""
+cl_parser.py: Command Line Parser, parses user commands
+"""
+
 import argparse
 
 class CLParser:
-    '''
-        @brief: Class to manage command line arguments
-    '''
+    """
+    @brief: Class to manage command line arguments
+    """
     
     def __init__(self):
         self._parser = argparse.ArgumentParser(description='Convert events to frames and associates bboxes')
@@ -29,9 +33,9 @@ class CLParser:
                         help='encoder: set the encoder: <tbe | polarity | sae>. Default: tbe')
 
     def parse(self):
-        '''
-            @brief: parse the command line arguments
-            @return: parsed arguments
-        '''
+        """
+        @brief: parse the command line arguments
+        @return: parsed arguments
+        """
 
         return self._parser.parse_args()

@@ -1,21 +1,25 @@
+"""
+dir_handlers.py: module that manages the input/output directories
+"""
+
 import os
 
-def setupDirectories(root_dir):
-    '''
-        @brief: Setup directories as requested in YOLOV3
-                implementation. 
-        @param: root_dir - Root directory where the files should be
-                           saved. Must be a valid folder
-        @return: Dict of useful directories:
-                "images": images_path,
-                "labels": labels_path,
-                "train_file": train_file_path,
-                "valid_file": valid_file_path,
-                "test_file": test_file_path,
-                "list": list_path,
-                "completed": completed_file_path,
-                "enc": evaluated_enc_path
-    '''
+def setupDirectories(root_dir: str) -> dict:
+    """
+    @brief: Setup directories as requested in YOLOV3
+            implementation. 
+    @param: root_dir - Root directory where the files should be
+                       saved. Must be a valid folder
+    @return: Dict of useful directories:
+            "images": images_path,
+            "labels": labels_path,
+            "train_file": train_file_path,
+            "valid_file": valid_file_path,
+            "test_file": test_file_path,
+            "list": list_path,
+            "completed": completed_file_path,
+            "enc": evaluated_enc_path
+    """
 
     start_folder = 'data'
     data_path = root_dir + '/' + start_folder
@@ -80,15 +84,15 @@ def setupDirectories(root_dir):
             }
 
 
-def getEventList(directory):
-    '''
-        @brief: Check in directory for events and bbox annotations. 
-                An event is valid if annotation file 
-                with same basename exists.
-        @param: directory - Directory where the .dat and .npy files
-                            are stored
-        @return: List of basenames of valid event files.
-    '''
+def getEventList(directory: str) -> list:
+    """
+    @brief: Check in directory for events and bbox annotations. 
+            An event is valid if annotation file 
+            with same basename exists.
+    @param: directory - Directory where the .dat and .npy files
+                        are stored
+    @return: List of basenames of valid event files.
+    """
 
     file_list_npy = [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file)) and 
                                                                 os.path.splitext(os.path.join(directory, file))[1] == '.npy']

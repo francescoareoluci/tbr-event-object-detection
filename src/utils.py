@@ -1,16 +1,20 @@
+"""
+utils.py: Utility functions
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
 
-def show_image(frame, bboxes):
-    '''
-        @brief: show video of encoded frames and their bboxes
-                during processing
-        @param: frame - A np array containing pixel informations
-        @param: bboxes - np array with the bboxes associated to the frame.
-                         As loaded from the GEN1 .npy array
-    '''
+def show_image(frame: np.array, bboxes: np.array):
+    """
+    @brief: show video of encoded frames and their bboxes
+            during processing
+    @param: frame - A np array containing pixel informations
+    @param: bboxes - np array with the bboxes associated to the frame.
+                     As loaded from the GEN1 .npy array
+    """
 
     plt.figure(1)
     plt.clf()
@@ -33,15 +37,15 @@ def show_image(frame, bboxes):
         ax.add_patch(rect)
 
 
-def save_bb_image(frame, bboxes, save_path):
-    '''
-        @brief: save encoded frames with their bboxes
-        @param: frame - A np array containing pixel informations
-        @param: bboxes - np array with the bboxes associated to the frame.
-                         As loaded from the GEN1 .npy array
-        @param: save_path - Existing path where the resulting images should
-                            be saved
-    '''
+def save_bb_image(frame: np.array, bboxes: np.array, save_path: str):
+    """
+    @brief: save encoded frames with their bboxes
+    @param: frame - A np array containing pixel informations
+    @param: bboxes - np array with the bboxes associated to the frame.
+                     As loaded from the GEN1 .npy array
+    @param: save_path - Existing path where the resulting images should
+                        be saved
+    """
 
     plt.imshow(frame, cmap='gray', vmin=0, vmax=1)
     plt.axis('off')
@@ -66,16 +70,16 @@ def save_bb_image(frame, bboxes, save_path):
         plt.close()
         
 
-def convertBBoxCoords(bbox, image_width, image_height):
-    '''
-        @brief: Converts top-left starting coordinates to
-                rectangle-centered coordinates. Moreover,
-                coordinates and size are normalized.
-        @param: bbox - A bbox as loaded from the GEN1 .npy array
-        @param: image_width
-        @param: image_height
-        @return: np array compliant to YOLOV3 implementation.
-    '''
+def convertBBoxCoords(bbox: np.array, image_width: int, image_height: int) -> np.array:
+    """
+    @brief: Converts top-left starting coordinates to
+            rectangle-centered coordinates. Moreover,
+            coordinates and size are normalized.
+    @param: bbox - A bbox as loaded from the GEN1 .npy array
+    @param: image_width
+    @param: image_height
+    @return: np array compliant to YOLOV3 implementation.
+    """
 
     top_left_x = bbox[1]
     top_left_y = bbox[2]

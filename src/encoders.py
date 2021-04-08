@@ -1,24 +1,35 @@
+"""
+encoders.py: encode frames from event videos using
+Temporal Binary, Polarity, Surface Active Events encodings
+"""
+
 import math
 import sys
 import numpy as np
 from tqdm import tqdm
 
 from tbe import TemporalBinaryEncoding
+import sys
+sys.path.insert(0, '../prophesee-automotive-dataset-toolbox/')
+from src.io.psee_loader import PSEELoader
 
 
-def encode_video_sae(width, height, video, delta=2500):
-    '''
-        @brief: Encode video in a sequence of frames using
-                Surface Active Event (SAE) encoding
-        @param: width
-        @param: height
-        @param: video - loaded from PSEELoader
-        @param: delta - accumulation time
-        @return: encoded frames as a Numpy array with the following data type:
-                 [('startTs', np.uint16), 
-                  ('endTs', np.uint16), 
-                  ('frame', np.float32, (height, width))]
-    '''
+def encode_video_sae(width: int, 
+                    height: int, 
+                    video: PSEELoader, 
+                    delta: int = 2500) -> np.array:
+    """
+    @brief: Encode video in a sequence of frames using
+            Surface Active Event (SAE) encoding
+    @param: width
+    @param: height
+    @param: video - loaded from PSEELoader
+    @param: delta - accumulation time
+    @return: encoded frames as a Numpy array with the following data type:
+                [('startTs', np.uint16), 
+                ('endTs', np.uint16), 
+                ('frame', np.float32, (height, width))]
+    """
 
     print("Starting Surface Active Event encoding...")
 
@@ -60,19 +71,22 @@ def encode_video_sae(width, height, video, delta=2500):
     return sae_array
 
 
-def encode_video_polarity(width, height, video, delta=2500):
-    '''
-        @brief: Encode video in a sequence of frames using
-                Polarity encoding
-        @param: width
-        @param: height
-        @param: video - loaded from PSEELoader
-        @param: delta - accumulation time
-        @return: encoded frames as a Numpy array with the following data type:
-                 [('startTs', np.uint16), 
-                  ('endTs', np.uint16), 
-                  ('frame', np.float32, (height, width))]
-    '''
+def encode_video_polarity(width: int, 
+                        height: int, 
+                        video: PSEELoader, 
+                        delta: int = 2500) -> np.array:
+    """
+    @brief: Encode video in a sequence of frames using
+            Polarity encoding
+    @param: width
+    @param: height
+    @param: video - loaded from PSEELoader
+    @param: delta - accumulation time
+    @return: encoded frames as a Numpy array with the following data type:
+             [('startTs', np.uint16), 
+              ('endTs', np.uint16), 
+              ('frame', np.float32, (height, width))]
+    """
 
     print("Starting Polarity Encoding...")
 
@@ -115,21 +129,26 @@ def encode_video_polarity(width, height, video, delta=2500):
     return polarity_array
 
 
-def encode_video_tbe(N, width, height, video, encoder, delta=2500):
-    '''
-        @brief: Encode an event video in a sequence of frame
-                using the Temporal Binary Representation
-        @param: N - number of bits to be used
-        @param: width
-        @param: height
-        @param: video - loaded from PSEELoader
-        @param: encoded - TBE encoder
-        @param: delta - accumulation time
-        @return: encoded frames as a Numpy array with the following data type:
-                 [('startTs', np.uint16), 
-                  ('endTs', np.uint16), 
-                  ('frame', np.float32, (height, width))]
-    '''
+def encode_video_tbe(N: int, 
+                    width: int, 
+                    height: int, 
+                    video: PSEELoader, 
+                    encoder: TemporalBinaryEncoding, 
+                    delta: int = 2500) -> np.array:
+    """
+    @brief: Encode an event video in a sequence of frame
+            using the Temporal Binary Representation
+    @param: N - number of bits to be used
+    @param: width
+    @param: height
+    @param: video - loaded from PSEELoader
+    @param: encoded - TBE encoder
+    @param: delta - accumulation time
+    @return: encoded frames as a Numpy array with the following data type:
+             [('startTs', np.uint16), 
+              ('endTs', np.uint16), 
+              ('frame', np.float32, (height, width))]
+    """
     
     print("Starting Temporal Binary Encoding...")
 
@@ -176,18 +195,18 @@ def encode_video_tbe(N, width, height, video, encoder, delta=2500):
     return tbe_array
 
 
-def get_frame_BB(frame, BB_array):
-    '''
-        @brief: Associates to an encoded video frame
-                a list of bounding boxes with timestamp included in 
-                start/end timestamp of the frame. 
-        @param: frame - Encoded frame with the following structure:
-                        [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
-                        (i.e. as the one returned from the encoders fuctions)
-        @param: BB_array - Bounding Boxes array, 
-                           loaded from the GEN1 .npy arrays
-        @return: The associated BBoxes.
-    '''
+def get_frame_BB(frame: np.array, BB_array: np.array) -> np.array:
+    """
+    @brief: Associates to an encoded video frame
+            a list of bounding boxes with timestamp included in 
+            start/end timestamp of the frame. 
+    @param: frame - Encoded frame with the following structure:
+                    [{'startTs': startTs}, {'endTs': endTs}, {'frame': frame}]
+                    (i.e. as the one returned from the encoders fuctions)
+    @param: BB_array - Bounding Boxes array, 
+                       loaded from the GEN1 .npy arrays
+    @return: The associated BBoxes.
+    """
 
     associated_bb = []
     for bb in BB_array:

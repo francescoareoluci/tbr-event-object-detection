@@ -1,3 +1,8 @@
+"""
+event_converter.py: convert event videos to frames with Temporal Binary Encoding
+Main module
+"""
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt
