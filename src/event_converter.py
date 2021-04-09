@@ -66,14 +66,10 @@ if __name__ == "__main__":
             exit()
 
     # Number of bits to be used in Temporal Binary Encoding
-    tbr_bits = 8
-    if tbr_bits_requested and args.tbr_bits[0] > 0:
-        tbr_bits = args.tbr_bits[0]
+    tbr_bits = args.tbr_bits
 
     # Accumulation time (microseconds)
-    delta_t = 2500
-    if accumulation_time_requested and args.accumulation_time[0] > 0:
-        delta_t = args.accumulation_time[0]
+    delta_t = args.accumulation_time
 
     # Print some info
     print("===============================")
