@@ -18,7 +18,7 @@ class CLParser:
         self._parser.add_argument('--show_video', '-v', action='count', default=0,
                         help='show_video: show video with evaluated TBR frames and their bboxes during processing. Default: false')
         self._parser.add_argument('--tbr_bits', '-n', type=int, nargs=1,
-                        help='tbr_bits: set the number of bits for Temporal Binary Representation. Default: 16')
+                        help='tbr_bits: set the number of bits for Temporal Binary Representation. Default: 8')
         self._parser.add_argument('--src_video', '-t', type=str, nargs=1,
                         help='src_video: path to event videos')
         self._parser.add_argument('--dest_path', '-d', type=str, nargs=1,
@@ -28,7 +28,7 @@ class CLParser:
         self._parser.add_argument('--save_bb_img', '-b', type=str, nargs=1,
                         help='save_bb_img: save frame with bboxes to path')
         self._parser.add_argument('--accumulation_time', '-a', type=int, nargs=1,
-                        help='accumulation_time: set the quantization time of events (microseconds). Default: 1000')
+                        help='accumulation_time: set the quantization time of events (microseconds). Default: 2500')
         self._parser.add_argument('--encoder', '-c', type=str, nargs=1,
                         help='encoder: set the encoder: <tbe | polarity | sae>. Default: tbe')
 

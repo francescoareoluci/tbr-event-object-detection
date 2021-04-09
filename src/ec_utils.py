@@ -1,5 +1,5 @@
 """
-utils.py: Utility functions
+ec_utils.py: Event Converter Utils - Utility functions
 """
 
 import numpy as np

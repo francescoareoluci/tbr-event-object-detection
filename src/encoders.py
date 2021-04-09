@@ -1,6 +1,6 @@
 """
 encoders.py: encode frames from event videos using
-Temporal Binary, Polarity, Surface Active Events encodings
+Temporal Binary Representation, Polarity, Surface Active Events encodings
 """
 
 import math
