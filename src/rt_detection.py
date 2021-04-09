@@ -42,25 +42,41 @@ from src.io.psee_loader import PSEELoader
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--event_video", type=str, default="../data/event.dat", help="path to event video (.dat)")
+    parser.add_argument("--event_video", type=str, default="../data/event.dat", 
+                        help="event_video: path to event video (.dat)")
     parser.add_argument('--tbr_bits', '-n', type=int, default=8,
                         help='tbr_bits: set the number of bits for Temporal Binary Representation. Default: 8')
     parser.add_argument('--accumulation_time', '-a', type=int, default=2500,
                         help='accumulation_time: set the quantization time of events (microseconds). Default: 2500')
-    parser.add_argument("--model_def", type=str, default="../PyTorch-YOLOv3/config/yolov3.cfg", help="path to model definition file")
-    parser.add_argument("--weights_path", type=str, default="../PyTorch-YOLOv3/weights/yolov3.weights", help="path to weights file")
-    parser.add_argument("--class_path", type=str, default="../data/classes.names", help="path to class label file")
-    parser.add_argument("--conf_thres", type=float, default=0.8, help="object confidence threshold")
-    parser.add_argument("--nms_thres", type=float, default=0.4, help="iou thresshold for non-maximum suppression")
-    parser.add_argument("--batch_size", type=int, default=1, help="size of the batches")
-    parser.add_argument("--n_cpu", type=int, default=0, help="number of cpu threads to use during batch generation")
-    parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
+    parser.add_argument("--model_def", type=str, default="../PyTorch-YOLOv3/config/yolov3.cfg",
+                        help="model_def: path to model definition file")
+    parser.add_argument("--weights_path", type=str, default="../PyTorch-YOLOv3/weights/yolov3.weights", 
+                        help="weights_path: path to weights file")
+    parser.add_argument("--class_path", type=str, default="../data/classes.names", 
+                        help="class_path: path to class label file")
+    parser.add_argument("--conf_thres", type=float, default=0.8, 
+                        help="conf_thres: object confidence threshold")
+    parser.add_argument("--nms_thres", type=float, default=0.4, 
+                        help="nms_thres: iou thresshold for non-maximum suppression")
+    parser.add_argument("--batch_size", type=int, default=1, 
+                        help="batch_size: size of the batches")
+    parser.add_argument("--n_cpu", type=int, default=0, 
+                        help="m_cpu: number of cpu threads to use during batch generation")
+    parser.add_argument("--img_size", type=int, default=416, 
+                        help="img_size: size of each image dimension")
+    parser.add_argument('--show_video', action='count', default=0,
+                        help='show_video: show video with evaluated TBR frames and their bboxes during processing. Default: false')
+    parser.add_argument('--save_frames', action='count', default=0,
+                        help='save_frames: save TBE frames and their detection as images')
+
     opt = parser.parse_args()
     print(opt)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    os.makedirs("output", exist_ok=True)
+    output_path = "../rt_detections"
+    if opt.save_frames > 0:
+        os.makedirs(output_path, exist_ok=True)
 
     # Set up model
     model = Darknet(opt.model_def, img_size=opt.img_size).to(device)
@@ -154,6 +170,9 @@ if __name__ == "__main__":
                     bbox = [0, x1, y1, box_w, box_h, cls_pred]
                     bboxes.append(bbox)
 
-            show_image(tbe_frame, np.array(bboxes))
-            plt.pause(0.001)
+            if opt.show_video > 0:
+                show_image(tbe_frame, np.array(bboxes))
+                plt.pause(0.001)
 
+            if opt.save_frames > 0:
+                save_bb_image(tbe_frame, np.array(bboxes), output_path + "/" + batch_count + ".png", False)

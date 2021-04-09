@@ -5,6 +5,7 @@ ec_utils.py: Event Converter Utils - Utility functions
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
+from matplotlib.ticker import NullLocator
 
 
 def show_image(frame: np.array, bboxes: np.array):
@@ -18,26 +19,40 @@ def show_image(frame: np.array, bboxes: np.array):
 
     plt.figure(1)
     plt.clf()
+    plt.axis("off")
     plt.imshow(frame, animated=True, cmap='gray', vmin=0, vmax=1)
-    plt.colorbar()
+    #plt.colorbar()
 
     # Get the current reference
     ax = plt.gca()
 
     # Create Rectangle boxes
     for b in bboxes:
-        if b[5] == 1:
-            # Person
-            rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='g', facecolor='none')
-        else:
-            # Vehicle
-            rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='r', facecolor='none')
-
+        predicted_class = b[5]
+        x = b[1]
+        y = b[2]
+        w = b[3]
+        h = b[4]
+        bbox_color = 'g' if predicted_class == 1 else 'r'
+        # Create Rectangle
+        rect = Rectangle((x, y), w, h, linewidth=2, edgecolor=bbox_color, facecolor='none')
         # Add the patch to the Axes
         ax.add_patch(rect)
+        # Add label
+        plt.text(
+            b[1],
+            b[2],
+            s='Pedestrian' if predicted_class == 1 else 'Vehicle',
+            color="white",
+            verticalalignment="top",
+            bbox={"color": bbox_color, "pad": 0},
+        )
 
 
-def save_bb_image(frame: np.array, bboxes: np.array, save_path: str):
+def save_bb_image(frame: np.array, 
+                  bboxes: np.array, 
+                  save_path: str, 
+                  only_detection: bool = True):
     """
     @brief: save encoded frames with their bboxes
     @param: frame - A np array containing pixel informations
@@ -65,7 +80,12 @@ def save_bb_image(frame: np.array, bboxes: np.array, save_path: str):
         # Add the patch to the Axes
         ax.add_patch(rect)
     
-    if len(bboxes) != 0:
+    if not only_detection:
+        # Save all frames if requested
+        plt.savefig(save_path, bbox_inches='tight')
+        plt.close()
+    elif len(bboxes) != 0:
+        # Save only frames with bboxes associated
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
         
