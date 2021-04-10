@@ -73,7 +73,7 @@ if __name__ == "__main__":
     print(opt)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+    
     output_path = "../rt_detections"
     if opt.save_frames > 0:
         os.makedirs(output_path, exist_ok=True)
@@ -128,15 +128,17 @@ if __name__ == "__main__":
             tbe_frame = encoder.encode(accumulation_mat)
 
             transform = transforms.Compose([            
-                transforms.Resize(416),
-                transforms.CenterCrop(416),
-                transforms.ToTensor()
+                ToTensor(),
+                Resize(opt.img_size)
             ])
 
-            input_img = transform(Image.fromarray(tbe_frame).convert('RGB'))
+            # Implemented transformations expect bbox array. Use a fake array
+            # @TODO: find a better solution...
+            input_img, bbox = transform([Image.fromarray(255 * tbe_frame).convert('RGB'), np.zeros((1,1))])
             # Add batch size (1)
             input_img = torch.unsqueeze(input_img, 0)
-
+            input_img = input_img.to(device)
+        
             # Detect objects on TBE frame
             with torch.no_grad():
                 detections = model(input_img)
@@ -150,17 +152,19 @@ if __name__ == "__main__":
             batch_count += 1
 
             bbox_list = []
-            for d in detections:
-                d = d.cpu()
-                to_list = d.tolist()
-                if len(to_list) != 0:
-                    bbox_list.append(to_list)
+            if detections[0] is not None:
+                for d in detections:
+                    d = d.cpu()
+                    to_list = d.tolist()
+                    if len(to_list) != 0:
+                        bbox_list.append(to_list)
             
             bbox_list = np.array(bbox_list)
             bboxes = []
             if len(bbox_list) != 0:
                 # Rescale boxes to original image
-                bbox_list = rescale_boxes(bbox_list, opt.img_size, tbe_frame.shape)
+                bbox_list = rescale_boxes(bbox_list[0], opt.img_size, tbe_frame.shape)
+                print(bbox_list)
                 for x1, y1, x2, y2, conf, cls_conf, cls_pred in bbox_list:
 
                     print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))
@@ -175,4 +179,4 @@ if __name__ == "__main__":
                 plt.pause(0.001)
 
             if opt.save_frames > 0:
-                save_bb_image(tbe_frame, np.array(bboxes), output_path + "/" + batch_count + ".png", False)
+                save_bb_image(tbe_frame, np.array(bboxes), output_path + "/" + batch_count + ".png")
