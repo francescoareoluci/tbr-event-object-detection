@@ -31,6 +31,8 @@ class CLParser:
                         help='accumulation_time: set the quantization time of events (microseconds). Default: 2500')
         self._parser.add_argument('--encoder', '-c', type=str, nargs=1,
                         help='encoder: set the encoder: <tbe | polarity | sae>. Default: tbe')
+        self._parser.add_argument('--export_all_frames', type=str, nargs=1,
+                        help='export_all_frames: export all encoded frames from an event video to path')
 
     def parse(self):
         """

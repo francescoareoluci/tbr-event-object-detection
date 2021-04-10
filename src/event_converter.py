@@ -35,6 +35,7 @@ if __name__ == "__main__":
     save_path_requested = True if args.save_bb_img != None else False
     accumulation_time_requested = True if args.accumulation_time != None else False
     encoder_type_requested = True if args.encoder != None else False
+    export_all_frames_requested = True if args.export_all_frames != None else False
 
     dest_root_folder = '..'
     if dest_path_requested:
@@ -43,6 +44,10 @@ if __name__ == "__main__":
     save_path = ""
     if save_path_requested:
         save_path = args.save_bb_img[0] + '/'
+
+    export_frames_path = ""
+    if export_all_frames_requested:
+        export_frames_path = args.export_all_frames[0] + '/'
 
     video_dir = "../train_events/"
     if src_video_requested:
@@ -178,6 +183,9 @@ if __name__ == "__main__":
             if show_video:
                 show_image(f['frame'], bboxes)
                 plt.pause(0.05)
+
+            if export_all_frames_requested:
+                save_bb_image(f['frame'], np.array([]), export_frames_path + filename + "_" + requested_encoder + ".jpg", False)
 
         print("Saved {:d} encoded frames in path: {:s}".format(img_count, dir_paths["images"]))
         print("Saved {:d} bounding boxes annotations in path: {:s}".format(bbox_count, dir_paths["labels"]))
