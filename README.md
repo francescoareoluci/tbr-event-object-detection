@@ -56,6 +56,7 @@ usage: event_converter.py [-h] [--use_stored_enc] [--save_enc] [--show_video]
                           [--save_bb_img SAVE_BB_IMG]
                           [--accumulation_time ACCUMULATION_TIME]
                           [--encoder ENCODER]
+                          [--export_all_frames EXPORT_ALL_FRAMES]
 
 Convert events to frames and associates bboxes
 
@@ -70,7 +71,7 @@ optional arguments:
                         their bboxes during processing. Default: false
   --tbr_bits TBR_BITS, -n TBR_BITS
                         tbr_bits: set the number of bits for Temporal Binary
-                        Representation. Default: 16
+                        Representation. Default: 8
   --src_video SRC_VIDEO, -t SRC_VIDEO
                         src_video: path to event videos
   --dest_path DEST_PATH, -d DEST_PATH
@@ -82,10 +83,14 @@ optional arguments:
                         save_bb_img: save frame with bboxes to path
   --accumulation_time ACCUMULATION_TIME, -a ACCUMULATION_TIME
                         accumulation_time: set the quantization time of events
-                        (microseconds). Default: 1000
+                        (microseconds). Default: 2500
   --encoder ENCODER, -c ENCODER
-                        encoder: set the encoder: <tbe | polarity | sae>. Default:
-                        tbe
+                        encoder: set the encoder: <tbe | polarity | sae>.
+                        Default: tbe
+  --export_all_frames EXPORT_ALL_FRAMES
+                        export_all_frames: export all encoded frames from an
+                        event video to path
+
 ```
 
 For example, to convert events from directory /dataset/train, store results in /dest/folder and label them as train data, run the following:
@@ -105,3 +110,40 @@ Additional options are available in order to:
 * Show video of converted frames and bboxes during processing - Option: -v
 * Change the accumulation time - Option: -a
 * Change encoder in order to store frames in other formats - Option: -c <tbe | polarity | sae>
+
+### Training object detector
+
+Once the dataset has been built, the object detector can be trained.
+To setup the detector, modify the gen1.data and gen1-test.data files inside the yolo_config folder with the absolute path of the dataset.
+Two configuration files are avaible in order to use the tiny (yolo_config/yolov3-tiny.cfg) or the full (yolo_config/yolov3-gen1.cfg) YOLO implementation.
+
+To train the detector, from the PyTorch-YOLOv3 folder launch the following command:
+> python3 train.py --model_def ../yolo_config/yolov3-<tiny | gen1>.cfg --data_config ../yolo_config/gen1.data
+
+To test the detector:
+
+> python3 test.py --model_def ../yolo_config/yolov3-<tiny | gen1>.cfg --data_config ../yolo_config/gen1-test.data --weights_path checkpoints/preferred_ckpt.pth
+
+To use the detector against real images:
+
+> python3 detect.py --image_folder /path/to/images --model_def ../yolo_config/yolov3-<tiny | gen1>.cfg --weights_path checkpoints/preferred_ckpt.pth --class_path /path/to/dataset/data/custom/classes.names
+
+Further informations are available in PyTorch-YOLOv3 repository README.
+
+### Use the Prophesee COCO metric evaluation
+
+In order to use the Prophesee evaluator script, compliant npy array files should be created. These arrays should contain the detected bounding boxes on test images along with their timestamp.
+This has be done by forking the YOLOv3 test.py script. The new script creates for each event (frames that belong to the same video) an array of tuples, where each tuple is a detected bounding box. The timestamp associated to a bounding box is approximated as: starting_accumulation_time + (total_accumulation_time / 2), where the total_accumulation_time for Temporal Binary Encoded frames is the accumulation time * number of bits used.
+In order to output the npy files enter the src/ folder and run the following command:
+
+> python3 test_gen1.py --model_def ../yolo_config/yolov3-<tiny | gen1>.cfg --data_config ../yolo_config/gen1-test.data --weights_path checkpoints/preferred_ckpt.pth --gen1_output /path/to/output/folder --total_acc_time 20000
+
+Once the npy files have been created, the Prophesee evaluator can be used. Enter the prophesee-automotive-dataset-toolbox repository and run the following command:
+
+> python3 psee_evaluator.py --camera GEN1 /path/to/gen1/events/npy /path/to/detection/events/npy
+
+### Real time object detection
+
+The YOLOv3 detect.py script has been forked in order to create a demo script that can be used to convert an event video to encoded frames and detect objects on them at the same time. In order to do that enter the src/ folder and run the following commands. 
+
+> python3 rt_detection.py --class_path /path/to/dataset/data/custom/classes.names --event_video /path/to/event/dat --model_def ../yolo_config/yolov3-<tiny | gen1>.cfg --show_video --weights_path ../PyTorch-YOLOv3/checkpoints/preferred_ckpt.pth --conf_thres 0.8
