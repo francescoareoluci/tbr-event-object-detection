@@ -1,0 +1,4 @@
+classes= 2
+valid=/path/to/dataset/data/custom/test.txt
+names=/path/to/dataset/data/custom/classes.names
+eval=coco

@@ -1,0 +1,4 @@
+classes=2
+train=/path/to/dataset/data/custom/train.txt
+valid=/path/to/dataset/data/custom/valid.txt
+names=/path/to/dataset/data/custom/classes.names
