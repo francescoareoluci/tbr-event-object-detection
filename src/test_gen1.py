@@ -107,9 +107,9 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
         curr_event = os.path.basename(_[0])
         event_split = curr_event.split('_')
         curr_event = event_split[0] + "_" + event_split[1] + "_" + event_split[2] + "_" + event_split[3]
-        file_ts = int(event_split[4].split('.')[0])
+        file_ts = int(event_split[4].split('.')[0]) * 1000    # to microseconds
         # @TODO: tbd if this is an optimal approximation
-        ts = (file_ts + (accumulation_time / 2)) * 1000  # to microseconds
+        ts = (file_ts + (accumulation_time / 2))
 
         with torch.no_grad():
             outputs = model(imgs)
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_cpu", type=int, default=8, help="number of cpu threads to use during batch generation")
     parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
     parser.add_argument("--total_acc_time", type=int, default=20000, 
-                        help="total accumulation time (for tbe = accumulation time * nbits)")
+                        help="total accumulation time in microseconds (for tbe = accumulation time * nbits)")
     parser.add_argument("--gen1_output", type=str, default="../gen1_arrays", 
                         help="path where GEN1 npy file should be stored")
     opt = parser.parse_args()
