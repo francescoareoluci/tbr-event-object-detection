@@ -30,16 +30,18 @@ from torchvision import transforms
 from torch.autograd import Variable
 import torch.optim as optim
 
-def extract_bboxes(tensor, timestamp, track):
+def extract_bboxes(tensor, timestamp, img_size):
     bboxes = []
     if tensor is None:
         return bboxes, track
 
+    gen1_img_width = 304
+    gen1_img_height = 240
     clone_tensor = tensor.clone()
     clone_tensor = clone_tensor.numpy()
-    bbox_list = rescale_boxes(clone_tensor, 416, (240, 304))
+    # Rescale boxes to original image
+    bbox_list = rescale_boxes(clone_tensor, img_size, (gen1_img_height, gen1_img_width))
 
-    i = 0
     for b in bbox_list:
         x1 = int(b[0])
         y1 = int(b[1])
@@ -50,16 +52,14 @@ def extract_bboxes(tensor, timestamp, track):
         h = y2 - y1
 
         pred_cls = int(b[6])
-        conf = 1
+        conf = float(b[5])
 
-        bbox = [timestamp + i, x1, y2, w, h, pred_cls, conf, track]
-        track += 1
-        i += 1
+        bbox = [timestamp, x1, y1, w, h, pred_cls, conf, 0]
         bboxes.append(tuple(bbox))
     
     return bboxes, track
 
-def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size):
+def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size, gen1_output, acc_time):
     model.eval()
 
     # Get dataloader
@@ -87,11 +87,10 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
                             ('w', '<f4'), 
                             ('h', '<f4'), 
                             ('class_id', 'u1'),
-                            ('confidence', '<f4'),
+                            ('class_confidence', '<f4'),
                             ('track_id', '<u4')])
     last_event = ""
-    rel_path = "../gen1_arr"
-    track = 0
+    rel_path = gen1_output
     for batch_i, (_, imgs, targets) in enumerate(tqdm.tqdm(dataloader, desc="Detecting objects")):
         
         if targets is None:
@@ -108,7 +107,9 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
         curr_event = os.path.basename(_[0])
         event_split = curr_event.split('_')
         curr_event = event_split[0] + "_" + event_split[1] + "_" + event_split[2] + "_" + event_split[3]
-        ts = int(event_split[4].split('.')[0]) * 1000
+        file_ts = int(event_split[4].split('.')[0])
+        # @TODO: tbd if this is an optimal approximation
+        ts = (file_ts + (accumulation_time / 2)) * 1000  # to microseconds
 
         with torch.no_grad():
             outputs = model(imgs)
@@ -116,13 +117,12 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
 
         if last_event == "":
             # First event
-            print(curr_event)
-            bboxes, track = extract_bboxes(outputs[0], ts, track)
+            bboxes, track = extract_bboxes(outputs[0], ts, img_size)
             if len(bboxes) != 0:
                 event_npy += bboxes
         elif last_event == curr_event:
             # Prediction of the same event
-            bboxes, track = extract_bboxes(outputs[0], ts, track)
+            bboxes, track = extract_bboxes(outputs[0], ts, img_size)
             if len(bboxes) != 0:
                 event_npy += bboxes
         else:
@@ -132,13 +132,12 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
             np.save(rel_path + "/" + curr_event + "_bbox.npy", event_npy)
             # Create new array
             event_npy = []
-            track = 0
-            bboxes, track = extract_bboxes(outputs[0], ts, track)
+            bboxes, track = extract_bboxes(outputs[0], ts, img_size)
             if len(bboxes) != 0:
                 event_npy += bboxes
 
-        track += 1
         last_event = curr_event
+
         sample_metrics += get_batch_statistics(outputs, targets, iou_threshold=iou_thres)
     
     if len(sample_metrics) == 0:  # no detections over whole validation set.
@@ -153,7 +152,7 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_size", type=int, default=8, help="size of each image batch")
+    #parser.add_argument("--batch_size", type=int, default=8, help="size of each image batch")
     parser.add_argument("--model_def", type=str, default="config/yolov3.cfg", help="path to model definition file")
     parser.add_argument("--data_config", type=str, default="config/coco.data", help="path to data config file")
     parser.add_argument("--weights_path", type=str, default="weights/yolov3.weights", help="path to weights file")
@@ -163,6 +162,10 @@ if __name__ == "__main__":
     parser.add_argument("--nms_thres", type=float, default=0.5, help="iou thresshold for non-maximum suppression")
     parser.add_argument("--n_cpu", type=int, default=8, help="number of cpu threads to use during batch generation")
     parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
+    parser.add_argument("--total_acc_time", type=int, default=20000, 
+                        help="total accumulation time (for tbe = accumulation time * nbits)")
+    parser.add_argument("--gen1_output", type=str, default="../gen1_arrays", 
+                        help="path where GEN1 npy file should be stored")
     opt = parser.parse_args()
     print(opt)
 
@@ -181,6 +184,9 @@ if __name__ == "__main__":
         # Load checkpoint weights
         model.load_state_dict(torch.load(opt.weights_path))
 
+    gen1_output_path = opt.gen1_output
+    accumulation_time = opt.total_acc_time
+
     print("Compute mAP...")
 
     precision, recall, AP, f1, ap_class = evaluate(
@@ -191,7 +197,9 @@ if __name__ == "__main__":
         nms_thres=opt.nms_thres,
         img_size=opt.img_size,
         #batch_size=opt.batch_size,
-        batch_size=1
+        batch_size=1,
+        gen1_output=gen1_output_path,
+        acc_time=accumulation_time
     )
 
     print("Average Precisions:")
