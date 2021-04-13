@@ -33,7 +33,7 @@ import torch.optim as optim
 def extract_bboxes(tensor, timestamp, img_size):
     bboxes = []
     if tensor is None:
-        return bboxes, track
+        return bboxes
 
     gen1_img_width = 304
     gen1_img_height = 240
@@ -43,10 +43,10 @@ def extract_bboxes(tensor, timestamp, img_size):
     bbox_list = rescale_boxes(clone_tensor, img_size, (gen1_img_height, gen1_img_width))
 
     for b in bbox_list:
-        x1 = int(b[0])
-        y1 = int(b[1])
-        x2 = int(b[2])
-        y2 = int(b[3])
+        x1 = b[0]
+        y1 = b[1]
+        x2 = b[2]
+        y2 = b[3]
 
         w = x2 - x1
         h = y2 - y1
@@ -57,7 +57,7 @@ def extract_bboxes(tensor, timestamp, img_size):
         bbox = [timestamp, x1, y1, w, h, pred_cls, conf, 0]
         bboxes.append(tuple(bbox))
     
-    return bboxes, track
+    return bboxes
 
 def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size, gen1_output, acc_time):
     model.eval()
@@ -66,8 +66,7 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
     dataset = ListDataset(path, 
                           img_size=img_size, 
                           multiscale=False, 
-                          transform=DEFAULT_TRANSFORMS,
-                          is_grayscale=True)
+                          transform=DEFAULT_TRANSFORMS)
     dataloader = torch.utils.data.DataLoader(
         dataset, 
         batch_size=batch_size,
@@ -117,12 +116,12 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
 
         if last_event == "":
             # First event
-            bboxes, track = extract_bboxes(outputs[0], ts, img_size)
+            bboxes = extract_bboxes(outputs[0], ts, img_size)
             if len(bboxes) != 0:
                 event_npy += bboxes
         elif last_event == curr_event:
             # Prediction of the same event
-            bboxes, track = extract_bboxes(outputs[0], ts, img_size)
+            bboxes = extract_bboxes(outputs[0], ts, img_size)
             if len(bboxes) != 0:
                 event_npy += bboxes
         else:
@@ -132,7 +131,7 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
             np.save(rel_path + "/" + curr_event + "_bbox.npy", event_npy)
             # Create new array
             event_npy = []
-            bboxes, track = extract_bboxes(outputs[0], ts, img_size)
+            bboxes = extract_bboxes(outputs[0], ts, img_size)
             if len(bboxes) != 0:
                 event_npy += bboxes
 
@@ -152,7 +151,6 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    #parser.add_argument("--batch_size", type=int, default=8, help="size of each image batch")
     parser.add_argument("--model_def", type=str, default="config/yolov3.cfg", help="path to model definition file")
     parser.add_argument("--data_config", type=str, default="config/coco.data", help="path to data config file")
     parser.add_argument("--weights_path", type=str, default="weights/yolov3.weights", help="path to weights file")
@@ -196,7 +194,6 @@ if __name__ == "__main__":
         conf_thres=opt.conf_thres,
         nms_thres=opt.nms_thres,
         img_size=opt.img_size,
-        #batch_size=opt.batch_size,
         batch_size=1,
         gen1_output=gen1_output_path,
         acc_time=accumulation_time
