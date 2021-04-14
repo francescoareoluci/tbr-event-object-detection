@@ -30,6 +30,7 @@ from torchvision import transforms
 from torch.autograd import Variable
 import torch.optim as optim
 
+
 def extract_bboxes(tensor, timestamp, img_size):
     bboxes = []
     if tensor is None:
@@ -41,7 +42,6 @@ def extract_bboxes(tensor, timestamp, img_size):
     clone_tensor = clone_tensor.numpy()
     # Rescale boxes to original image
     bbox_list = rescale_boxes(clone_tensor, img_size, (gen1_img_height, gen1_img_width))
-
     for b in bbox_list:
         x1 = b[0]
         y1 = b[1]
@@ -54,7 +54,7 @@ def extract_bboxes(tensor, timestamp, img_size):
         pred_cls = int(b[6])
         conf = float(b[5])
 
-        bbox = [timestamp, x1, y1, w, h, pred_cls, conf, 0]
+        bbox = [timestamp, int(x1), int(y1), int(w), int(h), pred_cls, conf, 0]
         bboxes.append(tuple(bbox))
     
     return bboxes
@@ -86,11 +86,11 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
                             ('w', '<f4'), 
                             ('h', '<f4'), 
                             ('class_id', 'u1'),
-                            ('class_confidence', '<f4'),
+                            ('confidence', '<f4'),
                             ('track_id', '<u4')])
     last_event = ""
     rel_path = gen1_output
-    for batch_i, (_, imgs, targets) in enumerate(tqdm.tqdm(dataloader, desc="Detecting objects")):
+    for batch_i, (img_names, imgs, targets) in enumerate(tqdm.tqdm(dataloader, desc="Detecting objects")):
         
         if targets is None:
             continue
@@ -103,7 +103,7 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
 
         imgs = Variable(imgs.type(Tensor), requires_grad=False)
 
-        curr_event = os.path.basename(_[0])
+        curr_event = os.path.basename(img_names[0])
         event_split = curr_event.split('_')
         curr_event = event_split[0] + "_" + event_split[1] + "_" + event_split[2] + "_" + event_split[3]
         file_ts = int(event_split[4].split('.')[0]) * 1000    # to microseconds
@@ -139,6 +139,10 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
 
         sample_metrics += get_batch_statistics(outputs, targets, iou_threshold=iou_thres)
     
+    # Save last event
+    event_npy = np.array(event_npy, dtype=gen1_data_type)
+    np.save(rel_path + "/" + curr_event + "_bbox.npy", event_npy)
+
     if len(sample_metrics) == 0:  # no detections over whole validation set.
         return None
     
