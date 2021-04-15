@@ -128,7 +128,7 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size
             # Prediction of another event
             # Save old array
             event_npy = np.array(event_npy, dtype=gen1_data_type)
-            np.save(rel_path + "/" + curr_event + "_bbox.npy", event_npy)
+            np.save(rel_path + "/" + last_event + "_bbox.npy", event_npy)
             # Create new array
             event_npy = []
             bboxes = extract_bboxes(outputs[0], ts, img_size)
