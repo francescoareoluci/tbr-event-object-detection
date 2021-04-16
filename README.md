@@ -136,7 +136,7 @@ In order to use the Prophesee evaluator script, compliant npy array files should
 This has be done by forking the YOLOv3 test.py script. The new script creates for each event (frames that belong to the same video) an array of tuples, where each tuple is a detected bounding box. The timestamp associated to a bounding box is approximated as: starting_accumulation_time + (total_accumulation_time / 2), where the total_accumulation_time for Temporal Binary Encoded frames is the accumulation time * number of bits used.
 In order to output the npy files enter the src/ folder and run the following command:
 
-> python3 test_gen1.py --model_def ../yolo_config/yolov3-<tiny | gen1>.cfg --data_config ../yolo_config/gen1-test.data --weights_path checkpoints/preferred_ckpt.pth --gen1_output /path/to/output/folder --total_acc_time 20000
+> python3 test_gen1.py --model_def ../yolo_config/yolov3-<tiny | gen1>.cfg --data_config ../yolo_config/gen1-test.data --weights_path ../PyTorch-YOLOv3/checkpoints/preferred_ckpt.pth --gen1_output /path/to/output/folder --total_acc_time 20000
 
 Once the npy files have been created, the Prophesee evaluator can be used. Enter the prophesee-automotive-dataset-toolbox repository and run the following command:
 
