@@ -203,10 +203,15 @@ if __name__ == "__main__":
         acc_time=accumulation_time
     )
 
+    print("Class precisions:")
+    for i, c in enumerate(precision):
+        print(f"+ Class '{c}' ({class_names[c]}) - Precision: {precision[i]}")
+
+    print("Class recalls:")
+        print(f"+ Class '{c}' ({class_names[c]}) - Recall: {recall[i]}")
+
     print("Average Precisions:")
     for i, c in enumerate(ap_class):
         print(f"+ Class '{c}' ({class_names[c]}) - AP: {AP[i]}")
-        print("+ Class {0} precision: {1}".format(i, precision[i]))
-        print("+ Class {0} recall: {1}".format(i, recall[i]))
 
     print(f"mAP: {AP.mean()}")
