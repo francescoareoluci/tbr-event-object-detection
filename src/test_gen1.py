@@ -205,11 +205,11 @@ if __name__ == "__main__":
 
     print("Class precisions:")
     for i, c in enumerate(precision):
-        print(f"+ Class '{c}' ({class_names[c]}) - Precision: {precision[i]}")
+        print(f"+ Class '{i}' ({class_names[i]}) - Precision: {c}")
 
     print("Class recalls:")
     for i, c in enumerate(recall):
-        print(f"+ Class '{c}' ({class_names[c]}) - Recall: {recall[i]}")
+        print(f"+ Class '{i}' ({class_names[i]}) - Recall: {c}")
 
     print("Average Precisions:")
     for i, c in enumerate(ap_class):
