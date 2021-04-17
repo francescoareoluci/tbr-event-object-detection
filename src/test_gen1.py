@@ -208,6 +208,7 @@ if __name__ == "__main__":
         print(f"+ Class '{c}' ({class_names[c]}) - Precision: {precision[i]}")
 
     print("Class recalls:")
+    for i, c in enumerate(recall):
         print(f"+ Class '{c}' ({class_names[c]}) - Recall: {recall[i]}")
 
     print("Average Precisions:")
