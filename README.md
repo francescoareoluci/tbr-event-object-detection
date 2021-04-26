@@ -1,9 +1,9 @@
 # Temporal Binary Represented Event Object Detection
 
 This repository contains a framework that can be used in order to perform object detection over events acquired from Event Cameras (https://en.wikipedia.org/wiki/Event_camera).
-To perform test the following technologies and tools have been employed:
+To perform tests, the following technologies and tools have been employed:
 
-* Prophesee’s GEN1 Automotive Detection Dataset. This dataset contains events and their bounding boxes for pedestrian and vehicles (https://www.prophesee.ai/2020/01/24/prophesee-gen1-automotive-detection-dataset/)
+* Prophesee’s GEN1 Automotive Detection Dataset. This dataset contains events and their annotated bounding boxes for two classes: pedestrian and vehicles (https://www.prophesee.ai/2020/01/24/prophesee-gen1-automotive-detection-dataset/)
 
 * Temporal Binary Representation. This encoding have been developed in order to encode events into frames that can be feed to an object detector along with annotated bounding boxes. For further details check this paper: https://arxiv.org/pdf/2010.08946.pdf
 
@@ -41,7 +41,7 @@ Events from the Prophesee’s GEN1 dataset can be converted to frames and boundi
 
 ``` 
 
-Under custom folder, the converted frames and bounding box annotations are stored in images and labels folder. Image types are specified in test, train and valid txt files. Already converted events are specified in completed_videos text file. Temporal Binary Represented array can be stored in npy format in evaluated_tbe folder to avoid performing the conversion multiple times.
+Starting from the custom folder, the converted frames and bounding box annotations are stored in images and labels folder. Image types are specified in test, train and valid txt files. Already converted events are specified in completed_videos text file. Temporal Binary Represented array can be stored in npy format in evaluated_tbe folder to avoid performing the conversion multiple times.
 Moreover, other types of conversion have been implemented in order to compare the results of Temporal Binary Represented event object detection (Polarity and Surface Active Events encoding).
 
 ### Conversion
@@ -111,7 +111,7 @@ Additional options are available in order to:
 * Change the accumulation time - Option: -a
 * Change encoder in order to store frames in other formats - Option: -c <tbe | polarity | sae>
 
-### Training object detector
+### Training the object detector
 
 Once the dataset has been built, the object detector can be trained.
 To setup the detector, modify the gen1.data and gen1-test.data files inside the yolo_config folder with the absolute path of the dataset.
