@@ -3,3 +3,4 @@ train_events
 valid_events
 test_events
 */__pycache__
+rt_detections
