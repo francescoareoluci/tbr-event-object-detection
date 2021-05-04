@@ -70,15 +70,25 @@ def save_bb_image(frame: np.array,
 
     # Create Rectangle boxes
     for b in bboxes:
-        if b[5] == 1:
-            # Person
-            rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='g', facecolor='none')
-        else:
-            # Vehicle
-            rect = Rectangle((b[1], b[2]), b[3], b[4], linewidth=2, edgecolor='r', facecolor='none')
-
+        predicted_class = b[5]
+        x = b[1]
+        y = b[2]
+        w = b[3]
+        h = b[4]
+        bbox_color = 'g' if predicted_class == 1 else 'r'
+        # Create Rectangle
+        rect = Rectangle((x, y), w, h, linewidth=2, edgecolor=bbox_color, facecolor='none')
         # Add the patch to the Axes
         ax.add_patch(rect)
+        # Add label
+        plt.text(
+            b[1],
+            b[2],
+            s='Pedestrian' if predicted_class == 1 else 'Vehicle',
+            color="white",
+            verticalalignment="top",
+            bbox={"color": bbox_color, "pad": 0},
+        )
     
     if not only_detection:
         # Save all frames if requested

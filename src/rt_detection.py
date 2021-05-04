@@ -179,4 +179,4 @@ if __name__ == "__main__":
                 plt.pause(0.001)
 
             if opt.save_frames > 0:
-                save_bb_image(tbe_frame, np.array(bboxes), output_path + "/" + batch_count + ".png")
+                save_bb_image(tbe_frame, np.array(bboxes), output_path + "/" + str(batch_count) + ".png", False)
