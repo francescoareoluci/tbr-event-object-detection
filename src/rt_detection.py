@@ -54,27 +54,27 @@ def rescaleAndHandleFrame(detections,
             if len(to_list) != 0:
                 bbox_list.append(to_list)
             
-        bbox_list = np.array(bbox_list)
-        bboxes = []
-        if len(bbox_list) != 0:
-            # Rescale boxes to original image
-            bbox_list = rescale_boxes(bbox_list[0], img_size, frame.shape)
-            print(bbox_list)
-            for x1, y1, x2, y2, conf, cls_conf, cls_pred in bbox_list:
+    bbox_list = np.array(bbox_list)
+    bboxes = []
+    if len(bbox_list) != 0:
+        # Rescale boxes to original image
+        bbox_list = rescale_boxes(bbox_list[0], img_size, frame.shape)
+        print(bbox_list)
+        for x1, y1, x2, y2, conf, cls_conf, cls_pred in bbox_list:
 
-                print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))
+            print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))
 
-                box_w = x2 - x1
-                box_h = y2 - y1
-                bbox = [0, x1, y1, box_w, box_h, cls_pred]
-                bboxes.append(bbox)
+            box_w = x2 - x1
+            box_h = y2 - y1
+            bbox = [0, x1, y1, box_w, box_h, cls_pred]
+            bboxes.append(bbox)
 
-        if show_video > 0:
-            show_image(frame, np.array(bboxes))
-            plt.pause(0.001)
+    if show_video > 0:
+        show_image(frame, np.array(bboxes))
+        plt.pause(0.001)
 
-        if save_frames > 0:
-            save_bb_image(frame, np.array(bboxes), output_path + "/" + str(batch_count) + ".png", False)
+    if save_frames > 0:
+        save_bb_image(frame, np.array(bboxes), output_path + "/" + str(batch_count) + ".png", False)
 
 
 def tbr_detection(gen1_video, 
