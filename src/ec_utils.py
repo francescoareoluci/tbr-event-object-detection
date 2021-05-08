@@ -8,7 +8,7 @@ from matplotlib.patches import Rectangle
 from matplotlib.ticker import NullLocator
 
 
-def show_image(frame: np.array, bboxes: np.array):
+def show_image(frame: np.array, bboxes: np.array, max_value: int = 1):
     """
     @brief: show video of encoded frames and their bboxes
             during processing
@@ -20,7 +20,7 @@ def show_image(frame: np.array, bboxes: np.array):
     plt.figure(1)
     plt.clf()
     plt.axis("off")
-    plt.imshow(frame, animated=True, cmap='gray', vmin=0, vmax=1)
+    plt.imshow(frame, animated=True, cmap='gray', vmin=0, vmax=max_value)
     #plt.colorbar()
 
     # Get the current reference
@@ -52,7 +52,8 @@ def show_image(frame: np.array, bboxes: np.array):
 def save_bb_image(frame: np.array, 
                   bboxes: np.array, 
                   save_path: str, 
-                  only_detection: bool = True):
+                  only_detection: bool = True,
+		  max_value: int = 1):
     """
     @brief: save encoded frames with their bboxes
     @param: frame - A np array containing pixel informations
@@ -62,7 +63,7 @@ def save_bb_image(frame: np.array,
                         be saved
     """
 
-    plt.imshow(frame, cmap='gray', vmin=0, vmax=1)
+    plt.imshow(frame, cmap='gray', vmin=0, vmax=max_value)
     plt.axis('off')
 
     # Get the current reference

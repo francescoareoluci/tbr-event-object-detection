@@ -103,6 +103,9 @@ if __name__ == "__main__":
     # Iterate through videos in video_dir to get list 
     video_names = getEventList(video_dir)
 
+    # Max pixel value to display frames
+    max_pixel_value = 1
+
     # Iterate videos
     for video_name in video_names:
         video_path = video_dir + video_name
@@ -131,6 +134,7 @@ if __name__ == "__main__":
                 encoded_array = encode_video_polarity(width, height, gen1_video, delta_t)
             else:
                 encoded_array = encode_video_sae(width, height, gen1_video, delta_t)
+                max_pixel_value = 255
 
             if save_encoding:
                 np.save(dir_paths["enc"] + video_name + "_enc.npy", encoded_array)
@@ -181,11 +185,11 @@ if __name__ == "__main__":
                 img_count += 1
 
             if show_video:
-                show_image(f['frame'], bboxes)
+                show_image(f['frame'], bboxes, max_pixel_value)
                 plt.pause(0.05)
 
             if export_all_frames_requested:
-                save_bb_image(f['frame'], np.array([]), export_frames_path + filename + "_" + requested_encoder + ".jpg", False)
+                save_bb_image(f['frame'], np.array([]), export_frames_path + filename + "_" + requested_encoder + ".jpg", False, max_pixel_value)
 
         print("Saved {:d} encoded frames in path: {:s}".format(img_count, dir_paths["images"]))
         print("Saved {:d} bounding boxes annotations in path: {:s}".format(bbox_count, dir_paths["labels"]))

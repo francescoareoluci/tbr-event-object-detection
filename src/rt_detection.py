@@ -45,7 +45,8 @@ def rescaleAndHandleFrame(detections,
                             img_size,
                             show_video,
                             save_frames,
-                            batch_count):
+                            batch_count,
+			    is_sae: bool = False):
     bbox_list = []
     if detections[0] is not None:
         for d in detections:
@@ -70,11 +71,11 @@ def rescaleAndHandleFrame(detections,
             bboxes.append(bbox)
 
     if show_video > 0:
-        show_image(frame, np.array(bboxes))
+        show_image(frame, np.array(bboxes), 255 if is_sae else 1)
         plt.pause(0.001)
 
     if save_frames > 0:
-        save_bb_image(frame, np.array(bboxes), output_path + "/" + str(batch_count) + ".png", False)
+        save_bb_image(frame, np.array(bboxes), output_path + "/" + str(batch_count) + ".png", False, 255 if is_sae else 1)
 
 
 def tbr_detection(gen1_video,
@@ -123,10 +124,13 @@ def tbr_detection(gen1_video,
             input_img = torch.unsqueeze(input_img, 0)
             input_img = input_img.to(device)
 
+            detect_prev_time = time.time()
             # Detect objects on TBE frame
             with torch.no_grad():
                 detections = model(input_img)
                 detections = non_max_suppression(detections, conf_thres, nms_thres)
+            detection_time = datetime.timedelta(seconds=time.time() - detect_prev_time)
+            print("\t+ Detection Time: %s" % (detection_time))
 
             # Log progress
             current_time = time.time()
@@ -146,7 +150,6 @@ def polarity_detection(gen1_video,
                         img_size,
                         conf_thres,
                         nms_thres):
-    i = 0
     batch_count = 0
     prev_time = time.time()
     # Parse events and build Polarity frames
@@ -174,10 +177,13 @@ def polarity_detection(gen1_video,
         input_img = torch.unsqueeze(input_img, 0)
         input_img = input_img.to(device)
 
+        detect_prev_time = time.time()
         # Detect objects on Polarity frame
         with torch.no_grad():
             detections = model(input_img)
             detections = non_max_suppression(detections, conf_thres, nms_thres)
+        detection_time = datetime.timedelta(seconds=time.time() - detect_prev_time)
+        print("\t+ Detection Time: %s" % (detection_time))
 
         # Log progress
         current_time = time.time()
@@ -197,7 +203,6 @@ def sae_detection(gen1_video,
                     img_size,
                     conf_thres,
                     nms_thres):
-    i = 0
     batch_count = 0
     prev_time = time.time()
     startTimestamp = 0    # microseconds
@@ -222,15 +227,18 @@ def sae_detection(gen1_video,
 
         # Implemented transformations expect bbox array. Use a fake array
         # @TODO: find a better solution...
-        input_img, bbox = transform([Image.fromarray(255 * sae_frame).convert('RGB'), np.zeros((1,1))])
+        input_img, bbox = transform([Image.fromarray(sae_frame).convert('RGB'), np.zeros((1,1))])
         # Add batch size (1)
         input_img = torch.unsqueeze(input_img, 0)
         input_img = input_img.to(device)
 
+        detect_prev_time = time.time()
         # Detect objects on SAE frame
         with torch.no_grad():
             detections = model(input_img)
             detections = non_max_suppression(detections, conf_thres, nms_thres)
+        detection_time = datetime.timedelta(seconds=time.time() - detect_prev_time)
+        print("\t+ Detection Time: %s" % (detection_time))
 
         # Log progress
         current_time = time.time()
@@ -239,7 +247,7 @@ def sae_detection(gen1_video,
         print("\t+ Batch %d, Inference Time: %s" % (batch_count, inference_time))
         batch_count += 1
 
-        rescaleAndHandleFrame(detections, sae_frame, img_size, show_video, save_frames, batch_count)
+        rescaleAndHandleFrame(detections, sae_frame, img_size, show_video, save_frames, batch_count, True)
 
 
 if __name__ == "__main__":
