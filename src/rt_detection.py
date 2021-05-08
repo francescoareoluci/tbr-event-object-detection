@@ -40,10 +40,10 @@ sys.path.insert(0, '../prophesee-automotive-dataset-toolbox/')
 from src.io.psee_loader import PSEELoader
 
 
-def rescaleAndHandleFrame(detections, 
-                            frame, 
-                            img_size, 
-                            show_video, 
+def rescaleAndHandleFrame(detections,
+                            frame,
+                            img_size,
+                            show_video,
                             save_frames,
                             batch_count):
     bbox_list = []
@@ -53,7 +53,7 @@ def rescaleAndHandleFrame(detections,
             to_list = d.tolist()
             if len(to_list) != 0:
                 bbox_list.append(to_list)
-            
+
     bbox_list = np.array(bbox_list)
     bboxes = []
     if len(bbox_list) != 0:
@@ -77,14 +77,14 @@ def rescaleAndHandleFrame(detections,
         save_bb_image(frame, np.array(bboxes), output_path + "/" + str(batch_count) + ".png", False)
 
 
-def tbr_detection(gen1_video, 
-                    tbr_bits, 
-                    delta_t, 
-                    output_path, 
-                    show_video, 
-                    save_frames, 
-                    img_size, 
-                    conf_thres, 
+def tbr_detection(gen1_video,
+                    tbr_bits,
+                    delta_t,
+                    output_path,
+                    show_video,
+                    save_frames,
+                    img_size,
+                    conf_thres,
                     nms_thres):
     # Set up TBE vars
     accumulation_mat = np.zeros((tbr_bits, gen1_video.get_size()[0], gen1_video.get_size()[1]))
@@ -111,7 +111,7 @@ def tbr_detection(gen1_video,
             # Encode frame
             tbe_frame = encoder.encode(accumulation_mat)
 
-            transform = transforms.Compose([            
+            transform = transforms.Compose([
                 ToTensor(),
                 Resize(img_size)
             ])
@@ -122,7 +122,7 @@ def tbr_detection(gen1_video,
             # Add batch size (1)
             input_img = torch.unsqueeze(input_img, 0)
             input_img = input_img.to(device)
-        
+
             # Detect objects on TBE frame
             with torch.no_grad():
                 detections = model(input_img)
@@ -138,13 +138,13 @@ def tbr_detection(gen1_video,
             rescaleAndHandleFrame(detections, tbe_frame, img_size, show_video, save_frames, batch_count)
 
 
-def polarity_detection(gen1_video, 
-                        delta_t, 
-                        output_path, 
-                        show_video, 
-                        save_frames, 
-                        img_size, 
-                        conf_thres, 
+def polarity_detection(gen1_video,
+                        delta_t,
+                        output_path,
+                        show_video,
+                        save_frames,
+                        img_size,
+                        conf_thres,
                         nms_thres):
     i = 0
     batch_count = 0
@@ -162,7 +162,7 @@ def polarity_detection(gen1_video,
             else:
                 p_frame[e['y'], e['x']] = 0
 
-        transform = transforms.Compose([            
+        transform = transforms.Compose([
             ToTensor(),
             Resize(img_size)
         ])
@@ -173,7 +173,7 @@ def polarity_detection(gen1_video,
         # Add batch size (1)
         input_img = torch.unsqueeze(input_img, 0)
         input_img = input_img.to(device)
-        
+
         # Detect objects on Polarity frame
         with torch.no_grad():
             detections = model(input_img)
@@ -189,30 +189,33 @@ def polarity_detection(gen1_video,
         rescaleAndHandleFrame(detections, p_frame, img_size, show_video, save_frames, batch_count)
 
 
-def sae_detection(gen1_video, 
-                    delta_t, 
-                    output_path, 
-                    show_video, 
-                    save_frames, 
-                    img_size, 
-                    conf_thres, 
+def sae_detection(gen1_video,
+                    delta_t,
+		    output_path,
+                    show_video,
+                    save_frames,
+                    img_size,
+                    conf_thres,
                     nms_thres):
     i = 0
     batch_count = 0
     prev_time = time.time()
+    startTimestamp = 0    # microseconds
     # Parse events and build SAE frames
     while not gen1_video.done:
         # Load next events from the video
         events = gen1_video.load_delta_t(delta_t)
         sae_frame = np.zeros(gen1_video.get_size())
         for e in events:
-            # Evaluate polarity of an event 
+            # Evaluate sae of an event
             # for a certain pixel
-            t_p = e['t']                    # microseconds
-            t_0 = startTimestamp * 1000     # microseconds
-            sae_frame[e['y'], e['x']] = 255 * ((t_p - t_0) / delta)
+            t_p = e['t']             # microseconds
+            t_0 = startTimestamp     # microseconds
+            sae_frame[e['y'], e['x']] = 255 * ((t_p - t_0) / delta_t)
 
-        transform = transforms.Compose([            
+        startTimestamp += delta_t
+
+        transform = transforms.Compose([
             ToTensor(),
             Resize(img_size)
         ])
@@ -223,7 +226,7 @@ def sae_detection(gen1_video,
         # Add batch size (1)
         input_img = torch.unsqueeze(input_img, 0)
         input_img = input_img.to(device)
-        
+
         # Detect objects on SAE frame
         with torch.no_grad():
             detections = model(input_img)
