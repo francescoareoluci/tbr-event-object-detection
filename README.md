@@ -142,8 +142,20 @@ Once the npy files have been created, the Prophesee evaluator can be used. Enter
 
 > python3 psee_evaluator.py --camera GEN1 /path/to/gen1/events/npy /path/to/detection/events/npy
 
+Note: in order to use the psee_evaluator script, it should be moved on the root directory of the repository. Otherwise the following error will be produced:
+
+``` bash
+Traceback (most recent call last):
+  File "psee_evaluator.py", line 5, in <module>
+    from src.metrics.coco_eval import evaluate_detection
+ModuleNotFoundError: No module named 'src'
+```
+
 ### Real time object detection
 
 The YOLOv3 detect.py script has been forked in order to create a demo script that can be used to convert an event video to encoded frames and detect objects on them at the same time. In order to do that enter the src/ folder and run the following commands. 
 
-> python3 rt_detection.py --class_path /path/to/dataset/data/custom/classes.names --event_video /path/to/event/dat --model_def ../yolo_config/yolov3-<tiny | gen1>.cfg --show_video --weights_path ../PyTorch-YOLOv3/checkpoints/preferred_ckpt.pth --conf_thres 0.8
+> python3 rt_detection.py --class_path /path/to/dataset/data/custom/classes.names --event_video /path/to/event/dat --model_def ../yolo_config/yolov3-<tiny | gen1>.cfg --encoder tbr --accumulation_time 10000 --tbr_bits 8 --show_video --weights_path ../PyTorch-YOLOv3/checkpoints/preferred_ckpt.pth --conf_thres 0.8
+
+All the three developed encoders can be used and can be specified with the option:
+* --encoder <tbr | polarity | sae>, default: tbr
