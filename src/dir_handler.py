@@ -100,6 +100,12 @@ def getEventList(directory: str) -> list:
                                                                 os.path.splitext(os.path.join(directory, file))[1] == '.dat']
     filtered_file_list = []
     for td in file_list_dat:
+        if "cut" in td:
+            # Avoid files with same name but different 'cut'
+            # @TODO: change split policy to handle these files
+            print("Skipping video {:s}: filename not compliant".format(td))
+            continue
+
         td_split = td.split('_')
         td = td_split[0] + "_" + td_split[1] + "_" + td_split[2] + "_" + td_split[3]
         for bbox in file_list_npy:
